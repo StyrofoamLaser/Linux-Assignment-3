@@ -10,6 +10,9 @@ static driver_status_t status =
 	-1
 };
 
+/*Called when a process tries to open the
+ * device file.
+ */
 static int device_open(inode, file)
 	struct inode* inode;
 	struct file* file;
@@ -20,6 +23,7 @@ static int device_open(inode, file)
 	printk("device_open(%p,%p)\n", inode, file);
 #endif
 
+	/*Get the minor device*/
 	status.minor = inode->i_rdev >> 8;
 	status.minor = inode->i_rdev & 0xFF;
 
@@ -31,15 +35,19 @@ static int device_open(inode, file)
 		status.busy
 	);
 
+	/* Does nothing if already talking to a process */
 	if(status.busy)
 		return -EBUSY;
 
 	status.busy = true;
 
+	/* Make sure not to overflow buffers */
 	sprintf
 	(
 		status.buf,
-		"Message initalized\n"
+		"If I told you once, I told you %d times - %s".
+		counter++,
+		"Hello, world\n"
 	);
 
 	status.buf_ptr = status.buf;
@@ -47,6 +55,24 @@ static int device_open(inode, file)
 	return SUCCESS;
 }
 
+/*Function called when the process
+ * closes the device file.
+ */
+static int device_release(inode, file)
+	struct inode* inode;
+	struct file* file;
+{
+#ifdef _DEBUG
+	printk("device_released(%p,%p)\n", inode, file);
+#endif
+
+	status.busy = false;
+	return SUCCESS;	
+}
+
+/*Called when a process that has opened the device file
+ * attempts to read from the file.
+ */
 static ssize_t device_read(file, buffer, length, offset)
 	struct file* file;
     char*	buffer;
@@ -65,9 +91,32 @@ static ssize_t device_read(file, buffer, length, offset)
 
 #ifdef _DEBUG
 	printk
-	(	"mapdriver:device_read() - Read %d bytes, %d left\n",
+	(	"mapdriver::device_read() - Read %d bytes, %d left\n",
 		bytes_read,
 		length
+	);
+#endif
+
+	if(++status.curr_char == 127)
+		status.curr_char = '0';
+
+	return bytes_read;
+}
+
+/* Called when a process tries to write to the device file. */
+static ssize_t device_write(file, buffer, length, offset)
+	struct file*	file;
+	const char* 	buffer;
+	size_t	    	length;
+	loff_t*		offset;
+{
+	int nbytes = 0;
+#ifdef _DEBUG
+	printk
+	(
+		"mapdriver::device_write() - Length: [%d], BufL [%s]\n",
+		length,
+		buffer
 	);
 #endif
 
@@ -77,6 +126,7 @@ static ssize_t device_read(file, buffer, length, offset)
 	return nbytes;
 }
 
+/* Initialize the module - Register the device */
 int init_module(void)
 {
 
@@ -115,6 +165,7 @@ int init_module(void)
 	return SUCCESS;
 }
 
+/* Unregisters the appropriate files */
 void cleanup_module(void)
 {
 	unregister_chrdev(status.major, DEVICE_NAME);
