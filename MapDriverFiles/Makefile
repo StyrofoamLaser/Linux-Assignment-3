@@ -14,20 +14,23 @@ CC_INSTRUCTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
 
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
-EXE=mapdriver-test.exe	#
-SRC=mapdriver-test.c	#these do not exist yet, but I put some placeholders in for them for later
+
 DRIVER=mapdriver.o
 MODULE=mapdriver.ko
+EXE=mapdriver-test.exe
+OBJ=mapdriver-test.c $(DRIVER)	
 
 obj-m += $(DRIVER)
 
-all: $(DRIVER)
+all: $(EXE)
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	@echo "Map Driver has been compiled"
 	@echo "Use 'make register' to register the module with the OS"
 	@echo "Then follow the module's suggestion to 'mknod /dev/asciimap ' with the correct major number"
 	@echo "To unregister run 'make unregister' or 'make clean-all'"
 	@echo ""
+
+compile: $(EXE) $(OBJ)
 
 register: $(DRIVER)
 	insmod ./$(MODULE)
@@ -37,13 +40,23 @@ register: $(DRIVER)
 	@echo "Map Driver Device has been registered."
 	@echo ""
 
-unregister: register
+$(EXE): mapdriver-test.o
+	mapdriver-test.o -o $(EXE)
+
+mapdriver-test.o: mapdriver-test.c common.h
+		$(CC) $(CC_OPTIONS) $(INC) -c mapdriver-test.c
+
+$(DRIVER): types.h mapdriver.h mapdriver.c
+	$(CC) $(CC_OPTIONS) $(INC) -c mapdriver.c
+
+unregister: 
 	rmmod mapdriver
 
 $(DRIVER): mapdriver.h mapdriver.c
 	$(CC) $(CFLAGS) $(INC) -c mapdriver.c
 
 clean:
+	rm -f $(EXE) $(OBJ)
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 clean-all: unregister clean
