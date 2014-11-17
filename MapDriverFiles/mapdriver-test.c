@@ -1,7 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <stdop.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "common.h"
@@ -28,10 +28,10 @@ int main(argc, argv)
 			}
 			else
 			{
-				(void) fprintf("recieved: ");
+				(void) printf("recieved: ");
 				for (j=0; j < n; j++)
 					(void) printf("c% ", buf[j]);
-				(void) fprintf("\n");
+				(void) printf("\n");
 			}
 
 			if(i == 30)
