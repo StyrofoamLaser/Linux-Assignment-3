@@ -5,16 +5,18 @@
 # Cody Carlson - Nov 13, 2014
 ####
 
-CC= gcc
+CC=gcc
 DEBUG=-g -D_DEBUG
 DEFINE=-DMODULE -D__KERNEL__ -DLINUX
-CC_INSTRUCTIONS=-g -Wall -O1 $(DEBUG) $(DEFINE)
+WARNINGS=-Wall -Wmissing-prototypes -Wmissing-declarations
+#ISO=-ansi -pedantic
+CC_INSTRUCTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
 
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
 EXE=mapdriver-test.exe	#
 SRC=mapdriver-test.c	#these do not exist yet, but I put some placeholders in for them for later
-DRIVER=mapdriver.c
+DRIVER=mapdriver.o
 MODULE=mapdriver.ko
 
 obj-m += $(DRIVER)
