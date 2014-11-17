@@ -6,14 +6,20 @@
 ####
 
 CC= gcc
-CC_INSTRUCTIONS=-g -Wall
+DEBUG=-g -D_DEBUG
+DEFINE=-DMODULE -D__KERNEL__ -DLINUX
+CC_INSTRUCTIONS=-g -Wall -O1 $(DEBUG) $(DEFINE)
+
+INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
 EXE=mapdriver-test.exe	#
 SRC=mapdriver-test.c	#these do not exist yet, but I put some placeholders in for them for later
 DRIVER=mapdriver.c
 MODULE=mapdriver.ko
 
-all:
+obj-m += $(DRIVER)
+
+all: $(DRIVER)
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	@echo "Map Driver has been compiled"
 	@echo "Use 'make register' to register the module with the OS"
@@ -32,11 +38,11 @@ register: $(DRIVER)
 unregister: register
 	rmmod mapdriver
 
-$(DRIVER): mapdriver.c
-	$(CC) $(CFLAGS) -c mapdriver.c
+$(DRIVER): mapdriver.h mapdriver.c
+	$(CC) $(CFLAGS) $(INC) -c mapdriver.c
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-clean-all:
-	unregister
+clean-all: unregister clean
+	
