@@ -14,11 +14,10 @@ CC_INSTRUCTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
 
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
-
 DRIVER=mapdriver.o
 MODULE=mapdriver.ko
 EXE=mapdriver-test.exe
-OBJ=mapdriver-test.c $(DRIVER)	
+OBJ=mapdriver-test.o $(DRIVER)	
 
 obj-m += $(DRIVER)
 
@@ -44,16 +43,13 @@ $(EXE): mapdriver-test.o
 	mapdriver-test.o -o $(EXE)
 
 mapdriver-test.o: mapdriver-test.c common.h
-		$(CC) $(CC_OPTIONS) $(INC) -c mapdriver-test.c
-
-$(DRIVER): types.h mapdriver.h mapdriver.c
-	$(CC) $(CC_OPTIONS) $(INC) -c mapdriver.c
+		$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver-test.c
 
 unregister: 
 	rmmod mapdriver
 
 $(DRIVER): mapdriver.h mapdriver.c
-	$(CC) $(CFLAGS) $(INC) -c mapdriver.c
+	$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver.c
 
 clean:
 	rm -f $(EXE) $(OBJ)

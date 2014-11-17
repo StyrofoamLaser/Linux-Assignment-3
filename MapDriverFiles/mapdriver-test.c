@@ -13,7 +13,7 @@ int main(argc, argv)
 	char buf[BSIZE];
 	int fd, i, j, n;
 
-	if((fd = open("/dev/asciimap", 0_RDWR)) >= 0)
+	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
 		for(i = 10; i<= 60; i+= 5)
 		{
@@ -29,8 +29,7 @@ int main(argc, argv)
 			else
 			{
 				(void) printf("recieved: ");
-				for (j=0; j < n; j++)
-					(void) printf("c% ", buf[j]);
+				for (j=0; j < n; j++) (void) printf("%c ", buf[j]);
 				(void) printf("\n");
 			}
 
