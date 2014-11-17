@@ -12,6 +12,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
+/* Required for character devices */
 #include <linux/fs.h>
 
 #include <asm/uaccess.h>
@@ -22,7 +23,7 @@
 /* Device Declarations ************/
 
 
-#define DRV_BUF_SIZE 50
+#define DRV_BUF_SIZE 80
 
 /* Device name */
 #define DEVICE_NAME "/dev/asciimap"
@@ -35,7 +36,7 @@ typedef struct _driver_status
 	char cur_char;
 
 	/* The current length of the buffer */
-	int buf_size;
+	int total_buf_length;
 
 	/* Prevents corcurent access to the device */
 	bool busy;
