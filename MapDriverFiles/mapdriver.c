@@ -3,8 +3,10 @@
 static driver_status_t status =
 {
 	'0',
+	 0,
 	false,
-	{0},
+	['R', 'H', 'V', 'L', 'J', 'P', 'C', 'C'],
+	staticBuf,
 	NULL,
 	-1,
 	-1
@@ -17,8 +19,8 @@ static int device_open(inode, file)
 	struct inode* inode;
 	struct file* file;
 {
-	static int counter = 0;
 
+	static int counter = 0;
 #ifdef _DEBUG
 	printk("device_open(%p,%p)\n", inode, file);
 #endif
@@ -38,19 +40,9 @@ static int device_open(inode, file)
 	/* Does nothing if already talking to a process */
 	if(status.busy)
 		return -EBUSY;
-
+	
+	/* Now talking to a process */
 	status.busy = true;
-
-	/* Make sure not to overflow buffers */
-	sprintf
-	(
-		status.buf,
-		"If I told you once, I told you %d times - %s".
-		counter++,
-		"Hello, world\n"
-	);
-
-	status.buf_ptr = status.buf;
 
 	return SUCCESS;
 }
@@ -74,12 +66,15 @@ static int device_release(inode, file)
  * attempts to read from the file.
  */
 static ssize_t device_read(file, buffer, length, offset)
-	struct file* file;
-    char*	buffer;
-    size_t	length;
-    loff_t*	offset;
+	struct file*	   file;
+   	       char*     buffer;
+   	      size_t     length;
+             loff_t*     offset;
 {
-	int bytes_read = 0;
+	/*Return the bytes read*/
+	return 0;
+}
+/*	int bytes_read = 0;
 
 	while(length > 0)
 	{
@@ -102,7 +97,7 @@ static ssize_t device_read(file, buffer, length, offset)
 
 	return bytes_read;
 }
-
+*/
 /* Called when a process tries to write to the device file. */
 static ssize_t device_write(file, buffer, length, offset)
 	struct file*	file;
@@ -110,7 +105,12 @@ static ssize_t device_write(file, buffer, length, offset)
 	size_t	    	length;
 	loff_t*		offset;
 {
-	int nbytes = 0;
+	/*Return the bytes written*/
+	return 0;
+}
+
+/*The old write function for reference*/
+/*	int nbytes = 0;
 #ifdef _DEBUG
 	printk
 	(
@@ -119,12 +119,12 @@ static ssize_t device_write(file, buffer, length, offset)
 		buffer
 	);
 #endif
-
+*/
 	/* Rewind back to '0' */
-	status.curr_char = '0';
+/*	status.curr_char = '0';
 
 	return nbytes;
-}
+*/
 
 /* Initialize the module - Register the device */
 int init_module(void)

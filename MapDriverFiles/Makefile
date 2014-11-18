@@ -40,7 +40,7 @@ register: $(DRIVER)
 	@echo ""
 
 $(EXE): mapdriver-test.o
-	mapdriver-test.o -o $(EXE)
+	$(CC) mapdriver-test.o -o  $(EXE) 
 
 mapdriver-test.o: mapdriver-test.c common.h
 		$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver-test.c

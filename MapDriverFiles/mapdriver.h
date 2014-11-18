@@ -22,8 +22,13 @@
 
 /* Device Declarations ************/
 
+/* A 50 x 50 square */
+#define TOTAL_STATIC_BUF_LENGTH 2500
 
-#define DRV_BUF_SIZE 80
+/* A 75 x 75 square */
+#define BSIZE 75
+
+#define BSIZE_SQUARED 5625
 
 /* Device name */
 #define DEVICE_NAME "/dev/asciimap"
@@ -33,15 +38,19 @@
 typedef struct _driver_status
 {
 	/* The next character to be output */
-	char cur_char;
+	char curr_char;
 
 	/* The current length of the buffer */
-	int total_buf_length;
+	int cur_buf_length;
 
 	/* Prevents corcurent access to the device */
 	bool busy;
 
-	char buf[DRV_BUF_SIZE];
+	/* Static buffer holding initial map 50x50  */
+	char staticBuf[TOTAL_STATIC_BUF_LENGTH];
+
+	/* Buffer that is initially set to the staticBuf */
+	char bsizeBuf[BSIZE_SQUARED]
 
 	/* Pointer to the current
  	 * place in the buffer 
@@ -59,8 +68,10 @@ typedef struct _driver_status
 /* Driver functions' prototypes */
 static int device_open( struct inode*, struct file* );
 static int device_release( struct inode*, struct file* );
+static int device_ioctl( int d, int request, ...); 
 static ssize_t device_read( struct file*, char*, size_t, loff_t* );
 static ssize_t device_write( struct file*, const char*, size_t, loff_t* );
+static off_t device_lseek( int fd, off_t offset, int whence );
 
 /* Kernel module-related */
 
@@ -71,12 +82,12 @@ static ssize_t device_write( struct file*, const char*, size_t, loff_t* );
 struct file_operations Fops =
 {
 	NULL, /* owner */
-	NULL, /* seek */
+	device_lseek, /* seek */
 	device_read,
 	device_write,
 	NULL, /* readdir */
 	NULL, /* poll/select */
-	NULL, /* ioctl */
+	device_ioctl, 
 	NULL, /* mmap */
 	device_open,
 	NULL, /* flush */
