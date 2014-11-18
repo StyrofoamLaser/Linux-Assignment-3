@@ -5,8 +5,8 @@ static driver_status_t status =
 	'0',
 	 0,
 	false,
-	['R', 'H', 'V', 'L', 'J', 'P', 'C', 'C'],
-	staticBuf,
+	{0},
+	{0},
 	NULL,
 	-1,
 	-1
@@ -20,7 +20,7 @@ static int device_open(inode, file)
 	struct file* file;
 {
 
-	static int counter = 0;
+
 #ifdef _DEBUG
 	printk("device_open(%p,%p)\n", inode, file);
 #endif
@@ -60,6 +60,12 @@ static int device_release(inode, file)
 
 	status.busy = false;
 	return SUCCESS;	
+}
+
+/* Reset the map back to original */
+static int device_ioctl( int d, int request, ...)
+{
+	return SUCCESS;
 }
 
 /*Called when a process that has opened the device file
@@ -125,6 +131,11 @@ static ssize_t device_write(file, buffer, length, offset)
 
 	return nbytes;
 */
+
+static off_t device_lseek(int fd, off_t offset, int whence)
+{
+	return -1;
+}
 
 /* Initialize the module - Register the device */
 int init_module(void)

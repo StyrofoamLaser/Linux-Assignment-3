@@ -9,7 +9,7 @@ CC=gcc
 DEBUG=-g -D_DEBUG
 DEFINE=-DMODULE -D__KERNEL__ -DLINUX
 WARNINGS=-Wall -Wmissing-prototypes -Wmissing-declarations
-#ISO=-ansi -pedantic
+#ISO=-ansi
 CC_INSTRUCTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
 
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include

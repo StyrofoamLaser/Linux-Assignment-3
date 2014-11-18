@@ -14,7 +14,6 @@
 
 /* Required for character devices */
 #include <linux/fs.h>
-
 #include <asm/uaccess.h>
 
 /* Return codes */
@@ -50,14 +49,14 @@ typedef struct _driver_status
 	char staticBuf[TOTAL_STATIC_BUF_LENGTH];
 
 	/* Buffer that is initially set to the staticBuf */
-	char bsizeBuf[BSIZE_SQUARED]
+	char bsizeBuf[BSIZE_SQUARED];
 
 	/* Pointer to the current
  	 * place in the buffer 
  	 */ 
 	char* buf_ptr;
 
-	/* The major device numer */
+	/* The major device number */
 	int major;
 
 	/* The minor device number */
