@@ -173,6 +173,13 @@ int init_module(void)
 		status.major
 	);
 
+
+	for(i = 0; i < TOTAL_STATIC_BUF_LENGTH - 1; i++)
+	{
+		status.staticBuf[i] = '0';
+	}
+
+
 	return SUCCESS;
 }
 

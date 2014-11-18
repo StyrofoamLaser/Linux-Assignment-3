@@ -15,7 +15,7 @@ int main(argc, argv)
 
 	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
-		for(i = 10; i<= 60; i+= 5)
+		/*for(i = 10; i<= 60; i+= 5)
 		{
 			n = read(fd, buf, i);
 
@@ -40,7 +40,7 @@ int main(argc, argv)
 				if(n<0)
 					perror("write(/dev/asciimap) failed");
 			}
-		}
+		}*/
 
 		close(fd);
 	}
