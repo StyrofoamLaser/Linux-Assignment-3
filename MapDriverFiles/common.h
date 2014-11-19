@@ -11,7 +11,7 @@
 
 /* Genereic Buffer Size */
 /* may be made up from the air */
-#define BSIZE             1024
+#define BSIZE             6000
 
 /* All these are to be treated as blanks or delimiters */
 #define BLANK_CHARS       " \n\t\r'"

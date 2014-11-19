@@ -83,9 +83,15 @@ static ssize_t device_read(file, buffer, length, offset)
 	/*Return the bytes read*/
 	int bytes_read = 0;
 
+
+	if(status.cur_buf_index == status.cur_buf_length)
+	{
+		status.cur_buf_index = 0;
+	}
+
 	while(length > 0 && status.cur_buf_index < status.cur_buf_length)
 	{
-		put_user('r', buffer++);
+		put_user(status.staticBuf[status.cur_buf_index], buffer++);
 		length--;
 		status.cur_buf_index++;
 		bytes_read++;
@@ -164,6 +170,8 @@ static off_t device_lseek(int fd, off_t offset, int whence)
 int init_module(void)
 {
 	int i = 0;
+	char initials_array[] = {'R', 'H', 'V', 'L', 'J', 'P', 'C', 'C'};
+	int initials_array_length = 8;
 	status.major = register_chrdev
 	(
 		0,
@@ -200,11 +208,13 @@ int init_module(void)
 	status.cur_width = 51;
 	status.cur_height = 51;
 
+	
+
 	for( i = 0; i < TOTAL_STATIC_BUF_LENGTH; i++)
 	{
-		if(i % status.cur_width - 1 != 0)
+		if((i + 1) % status.cur_width - 1 != 0)
 		{
-			status.staticBuf[i] = '0';
+			status.staticBuf[i] = initials_array[i % initials_array_length];
 		}
 		else
 		{

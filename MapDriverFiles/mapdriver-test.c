@@ -15,12 +15,11 @@ int main(argc, argv)
 
 	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
+	
+		read(fd, buf, BSIZE);
+		printf(buf);
+		printf("\n");
 
-		do
-		{	
-			n = read(fd, buf, BSIZE);
-			printf(buf);
-		}while(n > 0);
 		/*for(i = 10; i<= 60; i+= 5)
 		{
 			n = read(fd, buf, i);
