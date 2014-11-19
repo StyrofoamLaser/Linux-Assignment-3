@@ -6,6 +6,7 @@ static driver_status_t status =
 	 0,
 	 0,
 	 0,
+	 0,
 	false,
 	{0},
 	{0},
@@ -74,20 +75,20 @@ static int device_ioctl( int d, int request, ...)
  * attempts to read from the file.
  */
 static ssize_t device_read(file, buffer, length, offset)
-	struct file*	   file;
-   	       char*     buffer;
-   	      size_t     length;
-             loff_t*     offset;
+	struct file*	    file;
+   	       char*      buffer;
+   	      size_t      length;
+             loff_t*      offset;
 {
 	/*Return the bytes read*/
 	int bytes_read = 0;
 
-	while(length > 0)
+	while(length > 0 && status.cur_buf_index < status.cur_buf_length)
 	{
-		put_user(status.curr_char, buffer);
+		put_user('r', buffer++);
 		length--;
+		status.cur_buf_index++;
 		bytes_read++;
-		status.buf_ptr++;
 	}
 
 	#ifdef _DEBUG
@@ -196,13 +197,32 @@ int init_module(void)
 	);
 
 	
+	status.cur_width = 51;
+	status.cur_height = 51;
+
 	for( i = 0; i < TOTAL_STATIC_BUF_LENGTH; i++)
 	{
+		if(i % status.cur_width - 1 != 0)
+		{
+			status.staticBuf[i] = '0';
+		}
+		else
+		{
+			status.staticBuf[i] = '\n';
+		}
+		
+		status.bsizeBuf[i] = status.staticBuf[i];
+
+	}
+
+	for( i = TOTAL_STATIC_BUF_LENGTH; i < BSIZE_SQUARED; i++)
+	{
 		status.staticBuf[i] = '0';
-		status.bsizeBuf[i] = '0';
 	}
 	
-	status.buf_ptr = status.bsizeBuf;		
+	status.cur_buf_length = TOTAL_STATIC_BUF_LENGTH;
+	status.cur_buf_index = 0;
+	status.buf_ptr = status.staticBuf;		
 	
 
 	return SUCCESS;

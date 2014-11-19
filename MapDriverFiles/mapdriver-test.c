@@ -11,10 +11,16 @@ int main(argc, argv)
 	char* argv[];
 {
 	char buf[BSIZE];
-	int fd, i, j, n;
+	int fd, n;
 
 	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
+
+		do
+		{	
+			n = read(fd, buf, BSIZE);
+			printf(buf);
+		}while(n > 0);
 		/*for(i = 10; i<= 60; i+= 5)
 		{
 			n = read(fd, buf, i);
