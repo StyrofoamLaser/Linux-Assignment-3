@@ -87,13 +87,15 @@ static ssize_t device_read(file, buffer, length, offset)
 	if(status.cur_buf_index == status.cur_buf_length)
 	{
 		status.cur_buf_index = 0;
+		status.buf_ptr = status.staticBuf;
 	}
 
 	while(length > 0 && status.cur_buf_index < status.cur_buf_length)
 	{
-		put_user(status.staticBuf[status.cur_buf_index], buffer++);
+		put_user(*status.buf_ptr, buffer++);
 		length--;
 		status.cur_buf_index++;
+		status.buf_ptr++;
 		bytes_read++;
 	}
 
