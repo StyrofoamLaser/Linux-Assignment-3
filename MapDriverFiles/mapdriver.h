@@ -42,6 +42,12 @@ typedef struct _driver_status
 	/* The current length of the buffer */
 	int cur_buf_length;
 
+	/* The current width of the map */
+	int cur_width;
+
+	/* The current height of the buffer */
+	int cur_height;
+
 	/* Prevents corcurent access to the device */
 	bool busy;
 

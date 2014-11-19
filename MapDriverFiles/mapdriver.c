@@ -4,6 +4,8 @@ static driver_status_t status =
 {
 	'0',
 	 0,
+	 0,
+	 0,
 	false,
 	{0},
 	{0},
@@ -78,7 +80,26 @@ static ssize_t device_read(file, buffer, length, offset)
              loff_t*     offset;
 {
 	/*Return the bytes read*/
-	return 0;
+	int bytes_read = 0;
+
+	while(length > 0)
+	{
+		put_user(status.curr_char, buffer);
+		length--;
+		bytes_read++;
+		status.buf_ptr++;
+	}
+
+	#ifdef _DEBUG
+	printk
+	(
+		"mapdriver::device_read() - Read %d bytes, %d left\n",
+		bytes_read;
+		length;
+	);
+	#endif
+
+	return bytes_read;
 }
 /*	int bytes_read = 0;
 
@@ -112,6 +133,7 @@ static ssize_t device_write(file, buffer, length, offset)
 	loff_t*		offset;
 {
 	/*Return the bytes written*/
+	
 	return 0;
 }
 
@@ -140,7 +162,7 @@ static off_t device_lseek(int fd, off_t offset, int whence)
 /* Initialize the module - Register the device */
 int init_module(void)
 {
-
+	int i = 0;
 	status.major = register_chrdev
 	(
 		0,
@@ -173,12 +195,15 @@ int init_module(void)
 		status.major
 	);
 
-
-	for(i = 0; i < TOTAL_STATIC_BUF_LENGTH - 1; i++)
+	
+	for( i = 0; i < TOTAL_STATIC_BUF_LENGTH; i++)
 	{
 		status.staticBuf[i] = '0';
+		status.bsizeBuf[i] = '0';
 	}
-
+	
+	status.buf_ptr = status.bsizeBuf;		
+	
 
 	return SUCCESS;
 }
