@@ -81,10 +81,6 @@ static ssize_t device_read(file, buffer, length, offset)
 {
 	/*The number of bytes read*/
 	int bytes_read = 0;
-	/*Should only reset if the pointer starts at '\0'
- 	 *but after it has read through
-	 */
-	bool shouldReset = (*status.buf_ptr == '\0');
 
 	/*Reads through till it reaches length or null terminator*/
 	while(length > 0 && *status.buf_ptr != '\0')
@@ -104,12 +100,6 @@ static ssize_t device_read(file, buffer, length, offset)
 	);
 	#endif
 
-	/*Resets the buffer pointer if it has reached the end of the map*/
-	if(shouldReset)
-	{
-		status.buf_ptr = status.b_size_buf;
-	}
-
 	/*Return the bytes read*/
 	return bytes_read;
 }
@@ -121,22 +111,30 @@ static ssize_t device_write(file, buffer, length, offset)
 	size_t	    	length;
 	loff_t*		offset;
 {
-	/*Return the bytes written*/
-	
-	return 0;
-}
+	int bytes_written = 0;
+	int total_length = length;
+	while(length > 0 && status.cur_buf_length < BSIZE_SQUARED - 1)
+	{
+		*status.buf_ptr = buffer[total_length - length];
+		length--;
+		bytes_written++;
+		status.buf_ptr++;
+	} 
 
-/*The old write function for reference*/
-/*	int nbytes = 0;
-#ifdef _DEBUG
+	#ifdef _DEBUG
 	printk
 	(
 		"mapdriver::device_write() - Length: [%d], BufL [%s]\n",
 		length,
 		buffer
 	);
-#endif
-*/
+	#endif
+
+	/*Returns the bytes written*/
+	return bytes_written;
+}
+
+
 	/* Rewind back to '0' */
 /*	status.curr_char = '0';
 
