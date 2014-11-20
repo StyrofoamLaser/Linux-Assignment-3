@@ -69,7 +69,7 @@ generateMap()
 			done
 		done
 		
-		echo "Checking the map..."
+		#echo "Checking the map..."
 		checkMap
 
 		let "( numAttempts += 1 )"
@@ -92,10 +92,10 @@ checkMap()
 	if (( $numChars < threshold ))
 	then
 		mapValid=0
-		echo "Not valid."
+		#echo "Not valid."
 	else
 		mapValid=1
-		echo "Valid! $numChars characters out of $mapSize. Greater than 50% non-blank!"
+		#echo "Valid! $numChars characters out of $mapSize. Greater than 50% non-blank!"
 	fi
 }
 
