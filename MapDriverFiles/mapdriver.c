@@ -67,6 +67,73 @@ static int device_release(inode, file)
 /* Reset the map back to original */
 static int device_ioctl( int d, int request, ...)
 {
+	int i, 
+	    length = 0;
+	bool valid, 
+	     lineEnd = false;
+
+	switch(request)
+	{
+		case IOCTL_RESET:
+			/* Iterate through static buf and set the buffer to those values */
+			for (i = 0; i < TOTAL_STATIC_BUF_LENGTH; i++)
+			{
+				status.b_size_buf[i] = status.static_buf[i];
+			}
+
+			/* Zero out the rest of it */
+			memset(status.b_size_buf + i, 0, BSIZE_SQUARED - TOTAL_STATIC_BUF_LENGTH);
+
+			/* Reset the buffer pointer and length */
+			status.cur_buf_length = TOTAL_STATIC_BUF_LENGTH;
+			status.buf_ptr = status.b_size_buf;
+			break;
+		case IOCTL_ZERO_OUT:
+			/* Zero out the buffer and reset the pointer and length */
+			memset(status.b_size_buf, 0, BSIZE_SQUARED);
+			status.cur_buf_length = 0;
+			status.buf_ptr = status.b_size_buf;
+			break;
+		case IOCTL_CHK_CONS:
+
+			/* Iterate through the buffer and check for consistency. We don't break out early so that we can
+			   output all of the problems with it rather than just the first one we find. */
+			for (i = 0; i < status.cur_buf_length; i++)
+			{
+				/* Count the line length until we reach the end of the first line */
+				if (!lineEnd)
+				{
+					if (status.b_size_buf[i] == '\n')
+					{
+						lineEnd = true;
+					}
+					else
+					{
+						length++;
+					}
+				}
+			
+				/* Check for non-printable ASCII characters */
+				int value = (int)status.b_size_buf[i];
+				if (value < 32 && value != 10)
+				{
+					printk("The Buffer contains non-printable character with value %i at index %i\n", value, i);
+					valid = false;
+				}
+			}
+
+			/* If the first line's length over width is not an integer, it isn't valid */
+			if ((length / status.cur_width) % 1 != 0)
+			{
+				printk("The byte length of your first line is not the same as your buffer's width.\n");
+				valid = false;
+			}
+
+			if (!valid)
+				return FAILURE;
+			break;	
+	}
+
 	return SUCCESS;
 }
 
@@ -147,13 +214,6 @@ static ssize_t device_write(file, buffer, length, offset)
 	return bytes_written;
 }
 
-
-	/* Rewind back to '0' */
-/*	status.curr_char = '0';
-
-	return nbytes;
-*/
-
 static off_t device_lseek(int fd, off_t offset, int whence)
 {
 	/* Defines where in the buffer to begin from. This is defined by whence */
@@ -188,7 +248,7 @@ static off_t device_lseek(int fd, off_t offset, int whence)
 			"ERROR: lseek - Offset is out of bounds.\n"
 		);
 
-		return -1;
+		return FAILURE;
 	}
 
 	/* Setup the buffer pointer based off the starting bufferIndex */
@@ -207,7 +267,7 @@ int init_module(void)
 	int initials_array_length = 8;
 	status.major = register_chrdev
 	(
-		0,
+		MAJOR_NUMBER,
 		DEVICE_NAME,
 		&Fops
 	);
@@ -221,6 +281,9 @@ int init_module(void)
 		);
 		return status.major;
 	}
+
+	/* Set our major number to the one we asked for since it was successful */
+	status.major = MAJOR_NUMBER;
 
 	printk
 	(

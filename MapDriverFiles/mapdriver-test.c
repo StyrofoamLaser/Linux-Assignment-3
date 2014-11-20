@@ -29,6 +29,7 @@ int main(argc, argv)
 		printf("Written: %i\nNow I will write the remaining lines\n", m);
 
 		lseek(fd, 0, SEEK_SET);
+
 		do
 		{
 			/*Read in from the driver to the buffer*/

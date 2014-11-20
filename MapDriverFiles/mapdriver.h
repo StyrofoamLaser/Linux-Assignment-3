@@ -3,6 +3,7 @@
 * Header file for mapdriver.c
 * Cody Carlson - Nov 13, 2014
 * Content Added - Robert Hacker - Nove 16, 2014
+* Content Added - Vincent Loignon - Nov 20, 2014
 */
 
 #ifndef _MAPDRIVER_H
@@ -18,6 +19,7 @@
 
 /* Return codes */
 #define SUCCESS 0
+#define FAILURE -1
 
 /* Device Declarations ************/
 
@@ -36,6 +38,19 @@
 /* Device name */
 #define DEVICE_NAME "/dev/asciimap"
 
+/***************** DEVICE MACROS *****************/
+/* Required for ioctl commands */
+#include <asm/ioctl.h>
+
+/* Device Major Number */
+#define MAJOR_NUMBER 248
+
+/* ioctl Commands */
+#define IOCTL_RESET _IOR(MAJOR_NUMBER, 0, int)
+#define IOCTL_ZERO_OUT _IOR(MAJOR_NUMBER, 1, int)
+#define IOCTL_CHK_CONS _IOR(MAJOR_NUMBER, 2, int)
+
+/***************** END DEVICE MACROS *****************/
 
 /* Driver status structure */
 typedef struct _driver_status
