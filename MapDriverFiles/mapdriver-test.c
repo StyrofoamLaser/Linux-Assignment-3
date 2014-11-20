@@ -25,12 +25,12 @@ int main(argc, argv)
 				write_buf[i] = '0';
 		} 
 
-		n = write(fd, buf, BSIZE * 7);
+		n = write(fd, write_buf, BSIZE * 7);
 
 		do
 		{
 			/*Read in from the driver to the buffer*/
-			n = read(fd, buf, BSIZE);
+			n = read(fd, read_buf, BSIZE);
 
 			/*Print what was written if anything was written*/
 			printf(buf);
