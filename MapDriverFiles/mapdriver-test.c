@@ -22,8 +22,7 @@ int main(argc, argv)
 			n = read(fd, buf, BSIZE);
 
 			/*Print what was written if anything was written*/
-			if(n > 0)
-				printf(buf);
+			printf(buf);
 
 			for(i = 0; i < n; i++)
 			{

@@ -79,9 +79,14 @@ static ssize_t device_read(file, buffer, length, offset)
    	      size_t      length;
              loff_t*      offset;
 {
-	/*Return the bytes read*/
+	/*The number of bytes read*/
 	int bytes_read = 0;
+	/*Should only reset if the pointer starts at '\0'
+ 	 *but after it has read through
+	 */
+	bool shouldReset = (*status.buf_ptr == '\0');
 
+	/*Reads through till it reaches length or null terminator*/
 	while(length > 0 && *status.buf_ptr != '\0')
 	{
 		put_user(*status.buf_ptr, buffer++);
@@ -99,6 +104,13 @@ static ssize_t device_read(file, buffer, length, offset)
 	);
 	#endif
 
+	/*Resets the buffer pointer if it has reached the end of the map*/
+	if(shouldReset)
+	{
+		status.buf_ptr = status.b_size_buf;
+	}
+
+	/*Return the bytes read*/
 	return bytes_read;
 }
 
