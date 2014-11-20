@@ -176,7 +176,7 @@ static off_t device_lseek(int fd, off_t offset, int whence)
 	}
 
 	/* Perform bounds checking with the index first before moving the pointer */
-	bufferIndex += offset;
+	bufferIndex += (offset / sizeof(char));
 
 	/* If the buffer index is out of the map bounds, we return -1 and set errno */
 	if (bufferIndex < 0 ||
@@ -228,16 +228,7 @@ int init_module(void)
 		status.major
 	);
 
-
-	printk
-	(
-		"Suggested device file:\n\n" \
-		"mknod %s c %d 0\n\n" \
-		DEVICE_NAME,
-		status.major
-	);
-
-/*	printk("Suggested device file:\n\nmknod %s c %d 0\n\n",	DEVICE_NAME, status.major);*/
+	printk("Suggested device file:\n\nmknod %s c %d 0\n\n",	DEVICE_NAME, status.major);
 
 	
 	/*Starting width and height taking into account for the '\n' in width*/

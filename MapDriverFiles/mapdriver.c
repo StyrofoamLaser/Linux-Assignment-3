@@ -176,7 +176,7 @@ static off_t device_lseek(int fd, off_t offset, int whence)
 	}
 
 	/* Perform bounds checking with the index first before moving the pointer */
-	bufferIndex += offset;
+	bufferIndex += (offset / sizeof(char));
 
 	/* If the buffer index is out of the map bounds, we return -1 and set errno */
 	if (bufferIndex < 0 ||
@@ -185,7 +185,7 @@ static off_t device_lseek(int fd, off_t offset, int whence)
 		/* errno = EINVAL; */
 		printk
 		(
-			"ERROR: lseek - Offset is out of bounds."
+			"ERROR: lseek - Offset is out of bounds.\n"
 		);
 
 		return -1;
