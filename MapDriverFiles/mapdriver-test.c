@@ -10,12 +10,23 @@ int main(argc, argv)
 	int argc;
 	char* argv[];
 {
-	char buf[BSIZE];
+	char read_buf[BSIZE];
+	char write_buf[BSIZE * 7];
 	int fd, n, i;
 
 	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
 	
+		for(i = 0; i < (BSIZE * 7);i++)
+		{
+			if(i % 50 == 0)
+				write_buf[i] = '\n';
+			else
+				write_buf[i] = '0';
+		} 
+
+		n = write(fd, buf, BSIZE * 7);
+
 		do
 		{
 			/*Read in from the driver to the buffer*/
