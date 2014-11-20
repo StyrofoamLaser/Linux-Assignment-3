@@ -115,10 +115,27 @@ static ssize_t device_write(file, buffer, length, offset)
 	int total_length = length;
 	while(length > 0 && status.cur_buf_length < BSIZE_SQUARED - 1)
 	{
+		if(status.cur_buf_length < BSIZE_SQUARED - 1)
+		{
+			/*Print error and break*/
+			break;
+		}
+
+		if(length > 0)
+		{
+			/*Print error and break*/
+			break;
+		}
+		
+		/*Increment values*/
 		*status.buf_ptr = buffer[total_length - length];
 		length--;
 		bytes_written++;
 		status.buf_ptr++;
+		
+		/*If new pointer is null char increment length*/
+		if(*status.buf_ptr == '\0')
+			status.cur_buf_length++;
 	} 
 
 	#ifdef _DEBUG
