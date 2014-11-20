@@ -33,11 +33,11 @@ int main(argc, argv)
 			n = read(fd, read_buf, BSIZE);
 
 			/*Print what was written if anything was written*/
-			printf(buf);
+			printf(read_buf);
 
 			for(i = 0; i < n; i++)
 			{
-				buf[i] = '\0';
+				read_buf[i] = '\0';
 			}
 			
 		}
