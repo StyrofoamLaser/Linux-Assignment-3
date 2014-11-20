@@ -115,17 +115,11 @@ static ssize_t device_write(file, buffer, length, offset)
 	int total_length = length;
 	while(length > 0 && status.cur_buf_length < BSIZE_SQUARED)
 	{
-		if(status.cur_buf_length > BSIZE_SQUARED)
+		if(length < 0 ||
+		   status.cur_buf_length >= BSIZE_SQUARED)
 		{
 			/*Print error and break*/
-			printk("ERROR: Attempted to write outside the map  buffer");
-			break;
-		}
-
-		if(length < 0)
-		{
-			/*Print error and break*/
-			printk("Error: Attempted to read outside the write buffer");
+			printk("ERROR: Attempted to write outside the map buffer");
 			break;
 		}
 		
@@ -162,7 +156,47 @@ static ssize_t device_write(file, buffer, length, offset)
 
 static off_t device_lseek(int fd, off_t offset, int whence)
 {
-	return -1;
+	/* Defines where in the buffer to begin from. This is defined by whence */
+	int bufferIndex = 0;
+
+	switch(whence)
+	{
+		/* Begin from the start of the buffer */
+		case SEEK_SET:
+			bufferIndex = 0;
+			break;
+		/* Begin from the current buffer pointer position */
+		case SEEK_CUR:
+			bufferIndex = status.buf_ptr - status.b_size_buf;
+			break;
+		/* Begin from the end of the buffer */
+		case SEEK_END:
+			bufferIndex = BSIZE_SQUARED - 1;
+			break;
+	}
+
+	/* Perform bounds checking with the index first before moving the pointer */
+	bufferIndex += offset;
+
+	/* If the buffer index is out of the map bounds, we return -1 and set errno */
+	if (bufferIndex < 0 ||
+	    bufferIndex >= BSIZE_SQUARED)
+	{
+		/* errno = EINVAL; */
+		printk
+		(
+			"ERROR: lseek - Offset is out of bounds."
+		);
+
+		return -1;
+	}
+
+	/* Setup the buffer pointer based off the starting bufferIndex */
+	status.buf_ptr = status.b_size_buf + bufferIndex;
+
+	status.buf_ptr += offset;
+
+	return (off_t)(sizeof(char) * bufferIndex);
 }
 
 /* Initialize the module - Register the device */
@@ -194,21 +228,12 @@ int init_module(void)
 		status.major
 	);
 
-
-	printk
-	(
-		"Suggested device file:\n\n" \
-		"mknod %s c %d <minor>\n\n" \
-		DEVICE_NAME,
-		status.major
-	);
+	printk("Suggested device file:\n\nmknod %s c %d 0\n\n",	DEVICE_NAME, status.major);
 
 	
 	/*Starting width and height taking into account for the '\n' in width*/
 	status.cur_width = START_SIZE + 1;
 	status.cur_height = START_SIZE;
-
-	
 
 	for( i = 0; i < TOTAL_STATIC_BUF_LENGTH; i++)
 	{

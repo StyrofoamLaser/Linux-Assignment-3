@@ -12,7 +12,7 @@ int main(argc, argv)
 {
 	char read_buf[BSIZE];
 	char write_buf[BSIZE];
-	int fd, n, i;
+	int fd, n, i, m;
 
 	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
@@ -23,10 +23,12 @@ int main(argc, argv)
 				write_buf[i] = '\n';
 			else
 				write_buf[i] = '0';
-		} 
+		}
 
-		n = write(fd, write_buf, BSIZE);
-		printf("Written: %i\nNow I will write the remaining lines\n", n);
+		m = write(fd, write_buf, BSIZE);
+		printf("Written: %i\nNow I will write the remaining lines\n", m);
+
+		lseek(fd, 0, SEEK_SET);
 		do
 		{
 			/*Read in from the driver to the buffer*/

@@ -61,7 +61,7 @@ typedef struct _driver_status
 	/* Buffer that is initially set to the staticBuf */
 	char b_size_buf[BSIZE_SQUARED];
 
-	/* Pointer to the current poisiont in the buffer */ 
+	/* Pointer to the current position in the buffer */ 
 	char* buf_ptr;
 
 	/* The major device number */

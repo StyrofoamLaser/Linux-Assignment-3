@@ -18,6 +18,7 @@ DRIVER=mapdriver.o
 MODULE=mapdriver.ko
 EXE=mapdriver-test.exe
 OBJ=mapdriver-test.o $(DRIVER)	
+DIR=~/dev/asciimap
 
 obj-m += $(DRIVER)
 
@@ -44,6 +45,16 @@ $(EXE): mapdriver-test.o
 
 mapdriver-test.o: mapdriver-test.c common.h
 		$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver-test.c
+
+setup:
+ifeq (, $(wildcard $(DIR)))
+	eval `dmesg | grep mknod | tail -1`
+endif	
+
+build:
+	make all
+	make register
+	make setup
 
 unregister: 
 	rmmod mapdriver
