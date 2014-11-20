@@ -81,7 +81,7 @@ static ssize_t device_read(file, buffer, length, offset)
 {
 	/*The number of bytes read*/
 	int bytes_read = 0;
-
+	
 	/*Reads through till it reaches length or null terminator*/
 	while(length > 0 && *status.buf_ptr != '\0')
 	{
@@ -113,17 +113,19 @@ static ssize_t device_write(file, buffer, length, offset)
 {
 	int bytes_written = 0;
 	int total_length = length;
-	while(length > 0 && status.cur_buf_length < BSIZE_SQUARED - 1)
+	while(length > 0 && status.cur_buf_length < BSIZE_SQUARED)
 	{
-		if(status.cur_buf_length < BSIZE_SQUARED - 1)
+		if(status.cur_buf_length > BSIZE_SQUARED)
 		{
 			/*Print error and break*/
+			printk("ERROR: Attempted to write outside the map  buffer");
 			break;
 		}
 
-		if(length > 0)
+		if(length < 0)
 		{
 			/*Print error and break*/
+			printk("Error: Attempted to read outside the write buffer");
 			break;
 		}
 		
