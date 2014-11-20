@@ -21,16 +21,17 @@
 
 /* Device Declarations ************/
 
+/*The length and height for the buffer*/
 #define START_SIZE 50
 
-/* A 50 x 50 square with an extra 50 for the '\n' */
-#define TOTAL_STATIC_BUF_LENGTH 2550
+/* A 50 x 50 square with an extra 50 for the '\n' and 1 for the '\0'*/
+#define TOTAL_STATIC_BUF_LENGTH 2551
 
-
+/*The maximum length and height for the buffer*/
 #define BSIZE 75
 
-/* A 75 x 75 square with an extra 75 for the '\n'*/
-#define BSIZE_SQUARED 5700
+/* A 75 x 75 square with an extra 75 for the '\n' and 1 for the '\0'*/
+#define BSIZE_SQUARED 5701
 
 /* Device name */
 #define DEVICE_NAME "/dev/asciimap"
@@ -45,9 +46,6 @@ typedef struct _driver_status
 	/* The current length of the buffer */
 	int cur_buf_length;
 
-	/* The current index in the buffer */
-	int cur_buf_index;
-
 	/* The current width of the map */
 	int cur_width;
 
@@ -58,10 +56,10 @@ typedef struct _driver_status
 	bool busy;
 
 	/* Static buffer holding initial map 50x50  */
-	char staticBuf[TOTAL_STATIC_BUF_LENGTH];
+	char static_buf[TOTAL_STATIC_BUF_LENGTH];
 
 	/* Buffer that is initially set to the staticBuf */
-	char bsizeBuf[BSIZE_SQUARED];
+	char b_size_buf[BSIZE_SQUARED];
 
 	/* Pointer to the current
  	 * place in the buffer 

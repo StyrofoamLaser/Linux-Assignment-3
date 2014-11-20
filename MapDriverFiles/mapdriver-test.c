@@ -11,41 +11,27 @@ int main(argc, argv)
 	char* argv[];
 {
 	char buf[BSIZE];
-	int fd, n;
+	int fd, n, i;
 
 	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 	{
 	
-		read(fd, buf, BSIZE);
-		printf(buf);
-		printf("\n");
-
-		/*for(i = 10; i<= 60; i+= 5)
+		do
 		{
-			n = read(fd, buf, i);
+			/*Read in from the driver to the buffer*/
+			n = read(fd, buf, BSIZE);
 
-			if(i != n)
+			/*Print what was written if anything was written*/
+			if(n > 0)
+				printf(buf);
+
+			for(i = 0; i < n; i++)
 			{
-				(void) fprintf(stderr, "*** wanted %d bytes, got %d\n", i, n);
-
-				if(n < 0)
-					perror("read(asciimap) failed");
+				buf[i] = '\0';
 			}
-			else
-			{
-				(void) printf("recieved: ");
-				for (j=0; j < n; j++) (void) printf("%c ", buf[j]);
-				(void) printf("\n");
-			}
-
-			if(i == 30)
-			{
-				n = write(fd, "BLAH", 4);
-
-				if(n<0)
-					perror("write(/dev/asciimap) failed");
-			}
-		}*/
+			
+		}
+		while (n > 0);
 
 		close(fd);
 	}

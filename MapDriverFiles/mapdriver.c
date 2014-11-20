@@ -6,7 +6,6 @@ static driver_status_t status =
 	 0,
 	 0,
 	 0,
-	 0,
 	false,
 	{0},
 	{0},
@@ -83,18 +82,10 @@ static ssize_t device_read(file, buffer, length, offset)
 	/*Return the bytes read*/
 	int bytes_read = 0;
 
-
-	if(status.cur_buf_index == status.cur_buf_length)
-	{
-		status.cur_buf_index = 0;
-		status.buf_ptr = status.staticBuf;
-	}
-
-	while(length > 0 && status.cur_buf_index < status.cur_buf_length)
+	while(length > 0 && *status.buf_ptr != '\0')
 	{
 		put_user(*status.buf_ptr, buffer++);
 		length--;
-		status.cur_buf_index++;
 		status.buf_ptr++;
 		bytes_read++;
 	}
@@ -110,30 +101,7 @@ static ssize_t device_read(file, buffer, length, offset)
 
 	return bytes_read;
 }
-/*	int bytes_read = 0;
 
-	while(length > 0)
-	{
-		put_user(status.curr_char, buffer);
-
-		length--;
-		bytes_read++;
-	}
-
-#ifdef _DEBUG
-	printk
-	(	"mapdriver::device_read() - Read %d bytes, %d left\n",
-		bytes_read,
-		length
-	);
-#endif
-
-	if(++status.curr_char == 127)
-		status.curr_char = '0';
-
-	return bytes_read;
-}
-*/
 /* Called when a process tries to write to the device file. */
 static ssize_t device_write(file, buffer, length, offset)
 	struct file*	file;
@@ -207,8 +175,9 @@ int init_module(void)
 	);
 
 	
-	status.cur_width = 51;
-	status.cur_height = 51;
+	/*Starting width and height taking into account for the '\n' in width*/
+	status.cur_width = START_SIZE + 1;
+	status.cur_height = START_SIZE;
 
 	
 
@@ -216,25 +185,26 @@ int init_module(void)
 	{
 		if((i + 1) % status.cur_width - 1 != 0)
 		{
-			status.staticBuf[i] = initials_array[i % initials_array_length];
+			status.static_buf[i] = initials_array[i % initials_array_length];
 		}
 		else
 		{
-			status.staticBuf[i] = '\n';
+			status.static_buf[i] = '\n';
 		}
 		
-		status.bsizeBuf[i] = status.staticBuf[i];
+		status.b_size_buf[i] = status.static_buf[i];
 
 	}
+
+	status.static_buf[TOTAL_STATIC_BUF_LENGTH - 1] = '\0';
 
 	for( i = TOTAL_STATIC_BUF_LENGTH; i < BSIZE_SQUARED; i++)
 	{
-		status.staticBuf[i] = '0';
+		status.b_size_buf[i] = '\0';
 	}
 	
 	status.cur_buf_length = TOTAL_STATIC_BUF_LENGTH;
-	status.cur_buf_index = 0;
-	status.buf_ptr = status.staticBuf;		
+	status.buf_ptr = status.b_size_buf;		
 	
 
 	return SUCCESS;
