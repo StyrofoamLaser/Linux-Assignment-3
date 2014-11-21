@@ -16,8 +16,8 @@ INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
 DRIVER=mapdriver.o
 MODULE=mapdriver.ko
-EXE=mapdriver-test.exe
-OBJ=mapdriver-test.o $(DRIVER)	
+EXE=mapdriver-forkTest.exe
+OBJ=mapdriver-forkTest.o $(DRIVER)	
 DIR=~/dev/asciimap
 
 obj-m += $(DRIVER)
@@ -40,11 +40,11 @@ register: $(DRIVER)
 	@echo "Map Driver Device has been registered."
 	@echo ""
 
-$(EXE): mapdriver-test.o
-	$(CC) mapdriver-test.o -o  $(EXE) 
+$(EXE): mapdriver-forkTest.o
+	$(CC) mapdriver-forkTest.o -o  $(EXE) 
 
-mapdriver-test.o: mapdriver-test.c common.h
-		$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver-test.c
+mapdriver-forkTest.o: mapdriver-forkTest.c common.h
+		$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver-forkTest.c
 
 setup:
 ifeq (, $(wildcard $(DIR)))
@@ -68,6 +68,6 @@ clean:
 
 clean-all: unregister clean
 
-run-test: mapdriver-test.o
+run-test: mapdriver-forkTest.o
 	./$(EXE)
 	
