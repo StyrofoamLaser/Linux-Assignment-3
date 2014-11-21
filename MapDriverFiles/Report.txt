@@ -14,17 +14,14 @@ RUNNING:
 
 CURRENTLY KNOWN BUGS:
 
--- NONE --
+(Sort of a bug) - ioctl() cannot be run anywhere but within the driver itself.
 
 
 CONTRIBUTIONS:
 
 Cody: Makefile, Shell Script, and Report
-Vincent: Driver ioctl(), Driver lseek()
-Robert: Driver variables and setup, driver read(), driver write()
-James: Test program, interpreting text files
+Vincent: Driver ioctl(), Driver lseek(), modifications to Makefile
+Robert: Driver variables and setup, driver read(), driver write(), modifications to Makefile
+James: Test program, interpreting text files in the test program
 
-
-*** SOME OF THIS DATA MAY BE INCOMPLETE, I WAS NOT TOTALLY SURE OF WHO DID WHAT OR WHAT BUGS WE HAD AT THE TIME OF WRITING ***
-*** - CODY ***
 
