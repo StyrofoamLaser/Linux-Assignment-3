@@ -1,0 +1,30 @@
+-- FINAL ASSIGNMENT REPORT --
+Cody Carlson, Vincent Loignon, James Potvin, Robert Hacker
+
+INSTALLATION/COMPILATION:
+
+1. Run 'make'
+2. Run 'make build'
+
+
+RUNNING:
+
+1. Run 'make run-test' 
+
+
+CURRENTLY KNOWN BUGS:
+
+-- NONE --
+
+
+CONTRIBUTIONS:
+
+Cody: Makefile, Shell Script, and Report
+Vincent: Driver ioctl(), Driver lseek()
+Robert: Driver variables and setup, driver read(), driver write()
+James: Test program, interpreting text files
+
+
+*** SOME OF THIS DATA MAY BE INCOMPLETE, I WAS NOT TOTALLY SURE OF WHO DID WHAT OR WHAT BUGS WE HAD AT THE TIME OF WRITING ***
+*** - CODY ***
+

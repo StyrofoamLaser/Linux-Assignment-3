@@ -67,4 +67,7 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 clean-all: unregister clean
+
+run-test: mapdriver-test.o
+	./$(EXE)
 	
