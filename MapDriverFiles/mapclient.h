@@ -3,4 +3,8 @@
 
 #include <netdb.h>
 
+void printUsage(char* argv);
+int sendRequest(int sockfd, char* width, char* height);
+int readResponse(int sockfd);
+
 #endif
