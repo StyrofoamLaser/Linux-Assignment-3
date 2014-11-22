@@ -1,0 +1,20 @@
+#ifndef _SOCKETCOMMON_H
+#define _SOCKETCOMMON_H
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <netinet/in.h>
+
+#define DEF_PORT 5000
+#define DEF_IP "127.0.0.1"
+
+#define PROT_MSG 'M'
+#define PROT_ERR 'E'
+
+#endif
