@@ -21,3 +21,10 @@ void closeLogFile()
 		exit(1);	
 	}
 }
+
+void logz(char* prefix, char* msg)
+{
+	openLogFile();
+	fprintf(LOGFD, "%s %s", prefix, msg);
+	closeLogFile();
+}

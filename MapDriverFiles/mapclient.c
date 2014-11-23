@@ -243,7 +243,14 @@ int readResponse(int sockfd)
 		fprintf(stderr, msg);
 		fprintf(LOGFD, "%s %s", LOG_PRFX, msg);
 	}
+	else
+	{
+		fprintf(stderr, "\nError: Message Type is unrecognized!\n");
+		fprintf(LOGFD, "%s [Error]: Message Type is unrecognized!\n", LOG_PRFX);
+		printf("WTF: %c", recvBuff[0]);
 
+		return -1;
+	}
 
 	/* Read from the server socket */
 	/*while ( (n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
