@@ -1,6 +1,5 @@
 #include "mapserver.h"
 #include "socket_common.h"
-#include "common.h"
 
 int main(int argc, char *argv[])
 {
@@ -110,7 +109,7 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 			wait(0);
 
 			char pidString[15], widthString[15], heightString[15];
-			iToString(getpid(), pidString);	
+			iToString(getpid(), pidString);
 			iToString(*width, widthString);
 			iToString(*height, heightString);
 			
