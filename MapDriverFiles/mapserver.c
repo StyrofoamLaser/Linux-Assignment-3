@@ -1,8 +1,8 @@
 #include "mapserver.h"
 #include "socket_common.h"
 
-#define P_PREFIX="SERVER -"
-#define C_PREFIX="SERVER_CHILD -"
+#define P_PREFIX "SERVER -"
+#define C_PREFIX "SERVER_CHILD -"
 
 int main(int argc, char *argv[])
 {
