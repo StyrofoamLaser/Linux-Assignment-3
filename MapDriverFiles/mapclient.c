@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 	char* width = "-1";
 	char* height = "-1";
 
-	openLogFile();
+	/*openLogFile();*/
 
 	/* If the the user provided too many or too few arguments, give them the usage */
 	if(argc > 4 || argc == 2)
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 
 	logz(LOG_PRFX, "Server Response successfully read.\n");
 
-	closeLogFile();
+	/*closeLogFile();*/
 
 	return 0;
 }	
@@ -224,6 +224,9 @@ int readResponse(int sockfd)
 		int msgSize = getIntFromBuffer(recvBuff, 2);
 		char* msg = "";
 
+		printf("Msg Size: %i\n", msgSize);
+		printf("%s\n", recvBuff);
+
 		while ( (n = read(sockfd, recvBuff, sizeof(recvBuff) - 1) > 0) && 
 			 bytesRead < msgSize)
 		{
@@ -247,7 +250,7 @@ int readResponse(int sockfd)
 	{
 		fprintf(stderr, "\nError: Message Type is unrecognized!\n");
 		logz(LOG_PRFX, "[Error]: Message Type is unrecognized!\n");
-		printf("WTF: %c", recvBuff[0]);
+		printf("WTF: %c\n", recvBuff[0]);
 
 		return -1;
 	}

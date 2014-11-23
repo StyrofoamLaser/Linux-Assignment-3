@@ -57,19 +57,17 @@ int main(int argc, char *argv[])
 			close(pipeFD[0]); /* our child is only writing to the pipe, close read */
 
 			logz(C_PREFIX, "About to check the socket for a message, and evaluate it's validity.");
-			while ((n = read(connfd, buff, sizeof(buff) - 1) > 0))
-			{
-				msgValidity = interpretMsg(buff, &width, &height);
-			}
-			logz(C_PREFIX, "Validity Checked.");			
-			
-			if (n < 0)
+			if(n = read(connfd, buff, sizeof(buff) - 1) < 0)
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading from socket.");
 				logz(C_PREFIX, "Error reading from socket.");
-				exit(1);
+				exit(1);	
 			}
+
+			msgValidity = interpretMsg(buff, &width, &height);
+
+			logz(C_PREFIX, "Validity Checked.");			
 
 			write(pipeFD[1], &msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
@@ -180,7 +178,7 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 	else /* Send an Error Message */
 	{
 		char* errMsg = "ERROR: Unrecognized msg protocol.0";
-		snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, sizeof(errMsg), errMsg);
+		snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
 		write(connfd, sendBuff, strlen(sendBuff));
 		logz(P_PREFIX, "Sending an error msg to socket. Unregistered protocol.");
 	}
@@ -190,7 +188,7 @@ int interpretMsg(char buff[], int *width, int *height)
 {
 	if (buff[0] == 'M')
 	{
-		if (buff[2] == 0)
+		if (buff[2] == '0')
 		{
 			/* We want a default map to be sent*/
 			logz(C_PREFIX, "Msg interpreted as default driver map request. Validity 0.");
