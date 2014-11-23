@@ -16,13 +16,22 @@ INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
 DRIVER=mapdriver.o
 MODULE=mapdriver.ko
-EXE=mapdriver-forkTest.exe
-OBJ=mapdriver-forkTest.o $(DRIVER)	
+
+FORKTEST_EXE=mapdriver-forkTest.exe
+FORKTEST_OBJ=mapdriver-forkTest.o $(DRIVER)
+FORKTEST_SRC=mapdriver-forkTest.c
+FORKTEST_H=mapdriver-forkTest.h
+
+TEST_EXE=mapdriver-test.exe
+TEST_OBJ=mapdriver-test.o $(DRIVER)
+TEST_SRC=mapdriver-test.c
+TEST_H=mapdriver-test.h
+
 DIR=~/dev/asciimap
 
 obj-m += $(DRIVER)
 
-all: $(EXE)
+all: EXEs
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	@echo "Map Driver has been compiled"
 	@echo "Use 'make register' to register the module with the OS"
@@ -30,7 +39,7 @@ all: $(EXE)
 	@echo "To unregister run 'make unregister' or 'make clean-all'"
 	@echo ""
 
-compile: $(EXE) $(OBJ)
+compile: EXEs $(OBJ)
 
 register: $(DRIVER)
 	insmod ./$(MODULE)
@@ -40,11 +49,12 @@ register: $(DRIVER)
 	@echo "Map Driver Device has been registered."
 	@echo ""
 
-$(EXE): mapdriver-forkTest.o
-	$(CC) mapdriver-forkTest.o -o  $(EXE) 
+EXEs: $(FORKTEST_OBJ) $(TEST_OBJ)
+	$(CC) $(FORKTEST_OBJ) -o  $(FORKTEST_EXE)
+	$(CC) $(TEST_OBJ) -o $(TEST_EXE) 
 
-mapdriver-forkTest.o: mapdriver-forkTest.c common.h
-		$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver-forkTest.c
+$(FORKTEST_OBJ): $(FORKTEST_SRC) common.h
+		$(CC) $(CC_INSTRUCTIONS) $(INC) -c $(FORKTEST_SRC)
 
 setup:
 ifeq (, $(wildcard $(DIR)))
@@ -68,6 +78,9 @@ clean:
 
 clean-all: unregister clean
 
-run-test: mapdriver-forkTest.o
-	./$(EXE)
+fork-test:  $(FORKTEST_OBJ)
+	./$(FORKTEST_EXE)
+
+test: $(TEST_OBJ)
+	./$(TEST_EXE)
 	

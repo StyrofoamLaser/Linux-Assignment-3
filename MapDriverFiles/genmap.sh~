@@ -11,8 +11,6 @@ MAP_HEIGHT_DEFAULT=50
 MAP_WIDTH=$MAP_WIDTH_DEFAULT
 MAP_HEIGHT=$MAP_HEIGHT_DEFAULT
 
-FILE_NAME="NO NAME GIVEN"
-
 NUM_ARGS=$#
 ARGS=("$@")
 
@@ -38,14 +36,6 @@ main()
 		MAP_HEIGHT=${ARGS[1]}
 		generateMap
 		printMap
-	elif [ $NUM_ARGS = 3 ]
-	then
-		#set map width and height, generate map, print to given filename
-		MAP_WIDTH=${ARGS[0]}
-		MAP_HEIGHT=${ARGS[1]}
-		FILE_NAME=${ARGS[2]}
-		generateMap
-		printMapToFile
 	fi
 }
 
@@ -69,7 +59,7 @@ generateMap()
 				then
 					# obtain random character of the given types from /dev/urandom, with a 1 in ten chance
 					char=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 1)
-					let "( numChars += 1 )"
+					let "( numChars += 1 )" | zenity --progress
 					#char=' '
 				else
 					char=' ' # make the line blank
@@ -112,7 +102,7 @@ checkMap()
 # Print the map to STDOUT
 printMap()
 {
-	f2="%1s"
+	f2=" %1s"
 	
 	for (( i=1; i<$MAP_WIDTH; i++ ))
 	do
@@ -121,21 +111,6 @@ printMap()
 			printf "$f2" ${MAP[$i, $j]}
 		done
 		echo
-	done
-}
-
-# Print the map to a file
-printMapToFile()
-{
-	f2="%1s"
-	
-	for (( i=1; i<$MAP_WIDTH; i++ ))
-	do
-		for (( j=0; j<$MAP_HEIGHT; j++ ))
-		do
-			printf "$f2" ${MAP[$i, $j]} >> $FILE_NAME
-		done
-		echo >> $FILE_NAME
 	done
 }
 
