@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading from socket.");
+				fprintf(LOGFD, "%s\n", "SERVER - CHILD: Error reading from socket.");
 				exit(1);
 			}
 
@@ -104,6 +105,7 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 			{
 				/* print an error */
 				fprintf(stderr, "ERROR: Error reading from /dev/asciimap\n");
+				fprintf(LOGFD, "%s\n", "SERVER: Error reading from /dev/asciimap");
 			}
 			else
 			{
@@ -154,6 +156,7 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 				{
 					/* print an error */
 					fprintf(stderr, "ERROR: Error reading from generated map file\n");
+					fprintf(LOGFD, "%s\n", "SERVER: Error reading generate map file");
 				}
 				else
 				{
