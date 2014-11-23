@@ -39,66 +39,66 @@ int main(int argc, char* argv[])
 		}
 	}	
 
-	fprintf(LOGFD, "%s Attempting to create socket.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Attempting to create socket.\n");
 
 	/* Create the Socket */
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		fprintf(stderr, "\nError: Could not create socket.\n");
-		fprintf(LOGFD, "%s [Error]: Socket creation has failed!\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: Socket creation has failed!\n");
 		return 1;
 	}
 
-	fprintf(LOGFD, "%s Socket successfully created.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Socket successfully created.\n");
 
 	memset(&serv_addr, '0', sizeof(serv_addr)); 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(DEF_PORT); 
 
-	fprintf(LOGFD, "%s Attempting to convert IP Address to Binary.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Attempting to convert IP Address to Binary.\n");
 
 	/* Convert the IPv4/IPv6 Address from text to binary */
 	if(inet_pton(AF_INET, ip, &serv_addr.sin_addr) <= 0)
 	{
 		fprintf(stderr, "\nError: inet_pton Failed.\n");
-		fprintf(LOGFD, "%s [Error]: IP Address Conversion has failed!\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: IP Address Conversion has failed!\n");
 		return 1;
 	} 
 
-	fprintf(LOGFD, "%s IP Address successfully created.\n", LOG_PRFX);
-	fprintf(LOGFD, "%s Attempting to Connect to the Server's Socket.\n", LOG_PRFX);
+	logz(LOG_PRFX, "IP Address successfully created.\n");
+	logz(LOG_PRFX, "Attempting to Connect to the Server's Socket.\n");
 
 	/* Connect to the server side socket */
 	if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		fprintf(stderr, "\nError: Connection Failed.\n");
-		fprintf(LOGFD, "%s [Error]: Connection to Server Socket failed!\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: Connection to Server Socket failed!\n");
 		return 1;
 	} 
 
-	fprintf(LOGFD, "%s Server Socket successfully connected to.\n", LOG_PRFX);
-	fprintf(LOGFD, "%s Attempting to send request to Server.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Server Socket successfully connected to.\n");
+	logz(LOG_PRFX, "Attempting to send request to Server.\n");
 
 	/* Create the message based off user input */
 	if (sendRequest(sockfd, width, height) < 0)
 	{
 		fprintf(stderr, "\nError: Request to Server Failed.\n");
-		fprintf(LOGFD, "%s [Error]: Sending the Request to Server failed!\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: Sending the Request to Server failed!\n");
 		return 1;
 	}
 
-	fprintf(LOGFD, "%s Request successfully sent to Server.\n", LOG_PRFX);
-	fprintf(LOGFD, "%s Attempting to read response from Server.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Request successfully sent to Server.\n");
+	logz(LOG_PRFX, "Attempting to read response from Server.\n");
 
 	/* Read the response from the server */
 	if (readResponse(sockfd) < 0)
 	{
 		fprintf(stderr, "\nError: An error occured while Reading the server's response.\n");
-		fprintf(LOGFD, "%s [Error]: Reading the Server's Response has failed!\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: Reading the Server's Response has failed!\n");
 		return 1;
 	}
 
-	fprintf(LOGFD, "%s Server Response successfully read.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Server Response successfully read.\n");
 
 	closeLogFile();
 
@@ -130,7 +130,7 @@ int sendRequest(int sockfd, char* width, char* height)
 		if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)
 		{
 			fprintf(stderr, "\nError: Writing to server socket failed.\n");
-			fprintf(LOGFD, "%s [Error]: Writing to Server Socket has failed.\n", LOG_PRFX);
+			logz(LOG_PRFX, "[Error]: Writing to Server Socket has failed.\n");
 			return -1;
 		}
 	}
@@ -144,7 +144,7 @@ int sendRequest(int sockfd, char* width, char* height)
 		if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)
 		{
 			fprintf(stderr, "\nError: Writing to server socket failed.\n");
-			fprintf(LOGFD, "%s [Error]: Writing to Server Socket has failed.\n", LOG_PRFX);
+			logz(LOG_PRFX, "[Error]: Writing to Server Socket has failed.\n");
 			return -1;
 		}
 	}
@@ -159,32 +159,32 @@ int readResponse(int sockfd)
 
 	memset(recvBuff, '0',sizeof(recvBuff));
 
-	fprintf(LOGFD, "%s Attempting to Read Response Type.\n", LOG_PRFX);
+	logz(LOG_PRFX, "Attempting to Read Response Type.\n");
 
 	/* Read the first character, this determines what kind of message it is */
 	if (read(sockfd, recvBuff, sizeof(char)) < 0)
 	{
 		fprintf(stderr, "\nError: Reading server response type failed.\n");
-		fprintf(LOGFD, "%s [Error]: Reading Server Response Type has failed.\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: Reading Server Response Type has failed.\n");
 		return -1;
 	}
 
 	/* If it is a message, grab its dimensions next */
 	if (recvBuff[0] == PROT_MSG)
 	{
-		fprintf(LOGFD, "%s Server Response is of type: Message.\n", LOG_PRFX);
-		fprintf(LOGFD, "%s Attempting to Read Map Size.\n", LOG_PRFX);
+		logz(LOG_PRFX, "Server Response is of type: Message.\n");
+		logz(LOG_PRFX, "Attempting to Read Map Size.\n");
 
 		/* Read the next 11 bytes (3 char for spaces and 2 int for map size) */
 		if (read(sockfd, recvBuff, sizeof(char) * 3 + sizeof(int) * 2) < 0)
 		{
 			fprintf(stderr, "\nError: Reading Map Size failed.\n");
-			fprintf(LOGFD, "%s [Error]: Reading Map Size has failed.\n", LOG_PRFX);
+			logz(LOG_PRFX, "[Error]: Reading Map Size has failed.\n");
 			return -1;
 		}
 
-		fprintf(LOGFD, "%s Map Size successfully read.\n", LOG_PRFX);
-		fprintf(LOGFD, "%s Attempting to read the Map.\n", LOG_PRFX);
+		logz(LOG_PRFX, "Map Size successfully read.\n");
+		logz(LOG_PRFX, "Attempting to read the Map.\n");
 
 		int width = getIntFromBuffer(recvBuff, 2),
 		    height = getIntFromBuffer(recvBuff, 7);
@@ -194,30 +194,30 @@ int readResponse(int sockfd)
 		if(read(sockfd, map, sizeof(map)) < 0)
 		{
 			fprintf(stderr, "\nError: Reading Map failed.\n");
-			fprintf(LOGFD, "%s [Error]: Reading Map has failed.\n", LOG_PRFX);
+			logz(LOG_PRFX, "[Error]: Reading Map has failed.\n");
 			return -1;
 		}
 
-		fprintf(LOGFD, "%s Map successfully read.\n", LOG_PRFX);
+		logz(LOG_PRFX, "Map successfully read.\n");
 
 		printf(map);
 	}
 	/* If it is an error, grab the size of the message next */
 	else if (recvBuff[0] == PROT_ERR)
 	{
-		fprintf(LOGFD, "%s Server Response is of type: Error.\n", LOG_PRFX);
-		fprintf(LOGFD, "%s Attempting to read Error size.\n", LOG_PRFX);
+		logz(LOG_PRFX, "Server Response is of type: Error.\n");
+		logz(LOG_PRFX, "Attempting to read Error size.\n");
 
 		/* Read the next 6 bytes (2 char for spaces and 1 int for message length) */
 		if (read(sockfd, recvBuff, sizeof(char) * 2 + sizeof(int)) < 0)
 		{
 			fprintf(stderr, "\nError: Reading Error Message length failed.\n");
-			fprintf(LOGFD, "%s [Error]: Reading Error Message length has failed.\n", LOG_PRFX);
+			logz(LOG_PRFX, "[Error]: Reading Error Message length has failed.\n");
 			return -1;
 		}
 
-		fprintf(LOGFD, "%s Error Message length successfully read.\n", LOG_PRFX);
-		fprintf(LOGFD, "%s Attempting to read Error Message.\n", LOG_PRFX);
+		logz(LOG_PRFX, "Error Message length successfully read.\n");
+		logz(LOG_PRFX, "Attempting to read Error Message.\n");
 
 		n = 0;
 		int bytesRead = 0;
@@ -233,20 +233,20 @@ int readResponse(int sockfd)
 		if (n < 0)
 		{
 			fprintf(stderr, "\nError: Read Error Message failed.\n");
-			fprintf(LOGFD, "%s [Error]: Read Error Message has failed.\n", LOG_PRFX);
+			logz(LOG_PRFX, "[Error]: Read Error Message has failed.\n");
 			return -1;
 		}
 
-		fprintf(LOGFD, "%s Error Message successfully read.\n", LOG_PRFX);
+		logz(LOG_PRFX, "Error Message successfully read.\n");
 
 		/* Output the message to STDERR */
 		fprintf(stderr, msg);
-		fprintf(LOGFD, "%s %s", LOG_PRFX, msg);
+		logz(LOG_PRFX, msg);
 	}
 	else
 	{
 		fprintf(stderr, "\nError: Message Type is unrecognized!\n");
-		fprintf(LOGFD, "%s [Error]: Message Type is unrecognized!\n", LOG_PRFX);
+		logz(LOG_PRFX, "[Error]: Message Type is unrecognized!\n");
 		printf("WTF: %c", recvBuff[0]);
 
 		return -1;
