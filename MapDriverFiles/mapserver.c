@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			write(pipeFD[1], &msgValidity, sizeof(msgValidity);
+			write(pipeFD[1], &msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
 
 			exit(0);
