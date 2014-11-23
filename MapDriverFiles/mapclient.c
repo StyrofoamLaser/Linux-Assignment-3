@@ -94,8 +94,11 @@ int sendRequest(int sockfd, char* width, char* height)
 	if (width == "-1" && height == "-1")
 	{
 		char msgBuff[sizeof(char) * 3 + sizeof(int)];
+		/*char msgBuff[1024];*/
 		memset(msgBuff, '0', sizeof(msgBuff));
-		snprintf(msgBuff, sizeof(msgBuff), "%s %i", PROT_MSG, 0);
+		snprintf(msgBuff, sizeof(msgBuff), "%c %i", PROT_MSG, 0);
+
+		/*char* msgBuff = "M 0    ";*/
 
 		/* Send a message to the server */
 		if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)
@@ -108,7 +111,7 @@ int sendRequest(int sockfd, char* width, char* height)
 	{
 		char msgBuff[sizeof(char) * 4 + sizeof(int) * 2];
 		memset(msgBuff, '0', sizeof(msgBuff));
-		snprintf(msgBuff, sizeof(msgBuff), "%s %i %i", PROT_MSG, atoi(width), atoi(height));
+		snprintf(msgBuff, sizeof(msgBuff), "%c %i %i", PROT_MSG, atoi(width), atoi(height));
 		
 		/* Send a message to the server */
 		if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)

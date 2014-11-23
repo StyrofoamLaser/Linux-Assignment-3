@@ -48,12 +48,15 @@ int main(int argc, char *argv[])
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading from socket.");
+				exit(1);
 			}
+
+			exit(0);
 		}
 
-		sendMsg(msgValidity, &width, &height, sendBuff, connfd);
-		
 		wait(0);
+
+		sendMsg(msgValidity, &width, &height, sendBuff, connfd);
 		
 		close(connfd);
 		sleep(1);
@@ -79,7 +82,7 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 			}
 			else
 			{
-				snprintf(sendBuff, sizeof(sendBuff), "%s %i %i %s", PROT_MSG, 50, 50, deviceMap);
+				snprintf(sendBuff, sizeof(sendBuff), "%c %i %i %s", PROT_MSG, 50, 50, deviceMap);
 				write(connfd, sendBuff, strlen(sendBuff));
 			}
 		}
@@ -139,8 +142,8 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 	}
 	else /* Send an Error Message */
 	{
-		char* errMsg = "ERROR: Unrecognized msg protocol.";
-		snprintf(sendBuff, sizeof(sendBuff), "%s %i %s", PROT_ERR, sizeof(errMsg), errMsg);
+		char* errMsg = "ERROR: Unrecognized msg protocol.0";
+		snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, sizeof(errMsg), errMsg);
 		write(connfd, sendBuff, strlen(sendBuff));
 	}
 }
