@@ -19,4 +19,12 @@
 #define PROT_MSG 'M'
 #define PROT_ERR 'E'
 
+/* Globally accessible File Descriptor for the Log File. Use fprintf with this
+ * to output log messages. */
+extern int LOGFD; 
+
+/* Functions used to open and close the Log File */
+void openLogFile();
+void closeLogFile();
+
 #endif

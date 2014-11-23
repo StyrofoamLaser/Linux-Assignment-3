@@ -37,6 +37,8 @@ int main(int argc, char* argv[])
 		}
 	}	
 
+	
+
 	/* Create the Socket */
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
