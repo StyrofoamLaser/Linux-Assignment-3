@@ -30,14 +30,21 @@ int main(int argc, char *argv[])
 		write(connfd, sendBuff, strlen(sendBuff));*/
 
 		int pid = fork();
+
 		char buff[1025];
 		int width, height;
 		int msgValidity;
+
+		int pipeFD[2];
+
+		pipe(pipeFD);
 
 		if (pid == 0)
 		{
  			/* child stuff */
 			int n;
+
+			close(pipeFD[0]); /* our child is only writing to the pipe, close read */
 
 			while ((n = read(connfd, buff, sizeof(buff) - 1) > 0))
 			{
@@ -51,10 +58,19 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
+			write(pipeFD[1], &msgValidity, sizeof(msgValidity);
+			close(pipeFD[1]);
+
 			exit(0);
 		}
 
 		wait(0);
+
+		close(pipeFD[1]); /* parent is not writing, close the write */
+
+		read(pipeFD[0], &msgValidity, sizeof(int));
+
+		close(pipeFD[0]);
 
 		sendMsg(msgValidity, &width, &height, sendBuff, connfd);
 		
