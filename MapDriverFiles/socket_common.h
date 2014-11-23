@@ -26,5 +26,6 @@ extern FILE* LOGFD;
 /* Functions used to open and close the Log File */
 void openLogFile();
 void closeLogFile();
+void logz(char* prefix, char* msg);
 
 #endif

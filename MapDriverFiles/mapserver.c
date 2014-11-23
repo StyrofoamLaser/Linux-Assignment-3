@@ -6,12 +6,12 @@ int main(int argc, char *argv[])
 	int listenfd = 0, connfd = 0; /* listenfd is the file descriptor for the socket the server listens to. connfd is the descriptor given when the handshake is done. Represents "file" they are working with. */
 	struct sockaddr_in serv_addr;
 
-	FILE* fp = fopen("map_socket.log", "r");
+	/*FILE* fp = fopen("map_socket.log", "r");
 	if (fp != NULL)
 	{
 		fclose(fp);
 		remove("map_socket.log");
-	}
+	}*/
 
 	openLogFile();
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			write(pipeFD[1], &msgValidity, sizeof(msgValidity);
+			write(pipeFD[1], &msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
 
 			exit(0);
