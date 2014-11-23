@@ -48,12 +48,12 @@ int main(int argc, char *argv[])
 
 			close(pipeFD[0]); /* our child is only writing to the pipe, close read */
 
-			fprintf(LOGFD, "%s","SERVER_CHILD: About to check the socket for a message, and evaluate it's validity.");
+			fprintf(LOGFD, "%s\n","SERVER_CHILD: About to check the socket for a message, and evaluate it's validity.");
 			while ((n = read(connfd, buff, sizeof(buff) - 1) > 0))
 			{
 				msgValidity = interpretMsg(buff, &width, &height);
 			}
-			fprintf(LOGFD, "%s %i", "SERVER_CHILD: Validity Checked. Msg Validity: ", msgValidity);			
+			fprintf(LOGFD, "%s %i\n", "SERVER_CHILD: Validity Checked. Msg Validity: ", msgValidity);			
 			
 			if (n < 0)
 			{
@@ -76,11 +76,11 @@ int main(int argc, char *argv[])
 
 		close(pipeFD[0]);
 
-		fprintf(LOGFD, "%s %i", "SERVER: Sending msg to socket based on msg validity of: ", msgValidity);
+		fprintf(LOGFD, "%s %i\n", "SERVER: Sending msg to socket based on msg validity of: ", msgValidity);
 
 		sendMsg(msgValidity, &width, &height, sendBuff, connfd);
 
-		fprintf(LOGFD, "%s", "SERVER: Msg written to socket. Closing connection to client.");
+		fprintf(LOGFD, "%s\n", "SERVER: Msg written to socket. Closing connection to client.");
 		
 		close(connfd);
 		sleep(1);
@@ -103,13 +103,13 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 			if (n < 0)
 			{
 				/* print an error */
-				fprintf(stderr, "ERROR: Error reading from /dev/asciimap");
+				fprintf(stderr, "ERROR: Error reading from /dev/asciimap\n");
 			}
 			else
 			{
 				snprintf(sendBuff, sizeof(sendBuff), "%c %i %i %s", PROT_MSG, 50, 50, deviceMap);
 				write(connfd, sendBuff, strlen(sendBuff));
-				fprintf(LOGFD, "%s", "SERVER: Wrote default /dev/asciimap map to socket.");
+				fprintf(LOGFD, "%s\n", "SERVER: Wrote default /dev/asciimap map to socket.");
 			}
 		}
 
@@ -153,13 +153,13 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 				if (n < 0)
 				{
 					/* print an error */
-					fprintf(stderr, "ERROR: Error reading from generated map file");
+					fprintf(stderr, "ERROR: Error reading from generated map file\n");
 				}
 				else
 				{
 					snprintf(sendBuff, sizeof(sendBuff), "%s %i %i %s", PROT_MSG, widthString, heightString, generatedMap);
 					write(connfd, sendBuff, strlen(sendBuff));
-					fprintf(LOGFD, "%s %i %i", "SERVER: Sending msg to socket with generated map of size: ", *width, *height);
+					fprintf(LOGFD, "%s %i %i\n", "SERVER: Sending msg to socket with generated map of size: ", *width, *height);
 				}
 			}
 
@@ -172,7 +172,7 @@ void sendMsg(int msgValidity, int *width, int *height, char* sendBuff, int connf
 		char* errMsg = "ERROR: Unrecognized msg protocol.0";
 		snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, sizeof(errMsg), errMsg);
 		write(connfd, sendBuff, strlen(sendBuff));
-		fprintf(LOGFD, "%s", "SERVER: Sending an error msg to socket. Unregistered protocol.");
+		fprintf(LOGFD, "%s\n", "SERVER: Sending an error msg to socket. Unregistered protocol.");
 	}
 }
 
@@ -183,7 +183,7 @@ int interpretMsg(char buff[], int *width, int *height)
 		if (buff[2] == 0)
 		{
 			/* We want a default map to be sent*/
-			fprintf(LOGFD, "%s", "SERVER - CHILD: Msg interpreted as default driver map request. Validity 0.");
+			fprintf(LOGFD, "%s\n", "SERVER - CHILD: Msg interpreted as default driver map request. Validity 0.");
 			return 0;
 		}
 		else
@@ -194,13 +194,13 @@ int interpretMsg(char buff[], int *width, int *height)
 			*width = atoi(widthBytes);
 			*height = atoi(heightBytes);
 			
-			fprintf(LOGFD, "%s", "SERVER - CHILD: Msg interpreted as custom size from genmap. Validity 1.");
+			fprintf(LOGFD, "%s\n", "SERVER - CHILD: Msg interpreted as custom size from genmap. Validity 1.");
 			return 1;
 		}
 	}
 	else
 	{
-		fprintf(LOGFD, "%s", "SERVER - CHILD: Msg incorrect. Validity -1.");
+		fprintf(LOGFD, "%s\n", "SERVER - CHILD: Msg incorrect. Validity -1.");
 		return -1;
 	}
 }
