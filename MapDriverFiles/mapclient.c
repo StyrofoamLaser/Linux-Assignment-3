@@ -114,55 +114,44 @@ void printUsage(char* argv)
 
 int sendRequest(int sockfd, char* width, char* height)
 {
+	char msgBuff[1025];
+	memset(msgBuff, '0', sizeof(msgBuff));
+
 	/* Create the message based on the user's input. If the user
 	 * specified a width and height, we will send a request for
 	 * a map of that size. Otherwise we will send a generic request */
 	if (width == "-1" && height == "-1")
 	{
-		char msgBuff[sizeof(char) * 3 + sizeof(int)];
-		/*char msgBuff[1024];*/
-		memset(msgBuff, '0', sizeof(msgBuff));
-		snprintf(msgBuff, sizeof(msgBuff), "%c %i", PROT_MSG, 0);
-
-		/*char* msgBuff = "M 0    ";*/
-
-		/* Send a message to the server */
-		if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)
-		{
-			fprintf(stderr, "\nError: Writing to server socket failed.\n");
-			logz(LOG_PRFX, "[Error]: Writing to Server Socket has failed.\n");
-			return -1;
-		}
+		snprintf(msgBuff, sizeof(msgBuff) - 1, "%c %i", PROT_MSG, 0);
 	}
 	else
-	{
-		char msgBuff[sizeof(char) * 4 + sizeof(int) * 2];
-		memset(msgBuff, '0', sizeof(msgBuff));
-		snprintf(msgBuff, sizeof(msgBuff), "%c %i %i", PROT_MSG, atoi(width), atoi(height));
-		
-		/* Send a message to the server */
-		if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)
-		{
-			fprintf(stderr, "\nError: Writing to server socket failed.\n");
-			logz(LOG_PRFX, "[Error]: Writing to Server Socket has failed.\n");
-			return -1;
-		}
+	{	
+		snprintf(msgBuff, sizeof(msgBuff) - 1, "%c %i %i", PROT_MSG, atoi(width), atoi(height));
 	}
+
+	/* Send a message to the server */
+	if (write(sockfd, msgBuff, strlen(msgBuff)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing to server socket failed.\n");
+		logz(LOG_PRFX, "[Error]: Writing to Server Socket has failed.\n");
+		return -1;
+	}
+
 
 	return 0;
 }
 
 int readResponse(int sockfd)
 {
-	char recvBuff[1024];
+	char recvBuff[1025];
 	int n = 0;
 
 	memset(recvBuff, '0',sizeof(recvBuff));
 
 	logz(LOG_PRFX, "Attempting to Read Response Type.\n");
 
-	/* Read the first character, this determines what kind of message it is */
-	if (read(sockfd, recvBuff, sizeof(char)) < 0)
+	/* Read the first 2 characters, this determines what kind of message it is */
+	if (read(sockfd, recvBuff, sizeof(char) * 2) < 0)
 	{
 		fprintf(stderr, "\nError: Reading server response type failed.\n");
 		logz(LOG_PRFX, "[Error]: Reading Server Response Type has failed.\n");
@@ -173,24 +162,19 @@ int readResponse(int sockfd)
 	if (recvBuff[0] == PROT_MSG)
 	{
 		logz(LOG_PRFX, "Server Response is of type: Message.\n");
-		logz(LOG_PRFX, "Attempting to Read Map Size.\n");
+		logz(LOG_PRFX, "Attempting to Read Map Size.\n");	
 
-		/* Read the next 11 bytes (3 char for spaces and 2 int for map size) */
-		if (read(sockfd, recvBuff, sizeof(char) * 3 + sizeof(int) * 2) < 0)
-		{
-			fprintf(stderr, "\nError: Reading Map Size failed.\n");
-			logz(LOG_PRFX, "[Error]: Reading Map Size has failed.\n");
-			return -1;
-		}
+		/* Get the Width and Height by reading until an int is gotten from the file */
+		int width = getIntFromRead(sockfd, recvBuff, "Read Map Size has failed!\n"),
+		    height = getIntFromRead(sockfd, recvBuff, "Read Map Size has failed!\n");	
 
 		logz(LOG_PRFX, "Map Size successfully read.\n");
 		logz(LOG_PRFX, "Attempting to read the Map.\n");
 
-		int width = getIntFromBuffer(recvBuff, 2),
-		    height = getIntFromBuffer(recvBuff, 7);
 		n = 0;
 		char map[width * height + height + 1];
-
+		
+		/* Reads for exactly the map size into the map we created of that size */
 		if(read(sockfd, map, sizeof(map)) < 0)
 		{
 			fprintf(stderr, "\nError: Reading Map failed.\n");
@@ -208,32 +192,19 @@ int readResponse(int sockfd)
 		logz(LOG_PRFX, "Server Response is of type: Error.\n");
 		logz(LOG_PRFX, "Attempting to read Error size.\n");
 
-		/* Read the next 6 bytes (2 char for spaces and 1 int for message length) */
-		if (read(sockfd, recvBuff, sizeof(char) * 2 + sizeof(int)) < 0)
-		{
-			fprintf(stderr, "\nError: Reading Error Message length failed.\n");
-			logz(LOG_PRFX, "[Error]: Reading Error Message length has failed.\n");
-			return -1;
-		}
-
+		int msgSize = getIntFromRead(sockfd, recvBuff, "Reading Error Message length has failed.\n");
+		
 		logz(LOG_PRFX, "Error Message length successfully read.\n");
 		logz(LOG_PRFX, "Attempting to read Error Message.\n");
 
 		n = 0;
 		int bytesRead = 0;
-		int msgSize = getIntFromBuffer(recvBuff, 2);
-		char* msg = "";
+		char msg[msgSize + 1];
+		memset(msg, '0', sizeof(msg));
 
 		printf("Msg Size: %i\n", msgSize);
-		printf("%s\n", recvBuff);
 
-		while ( (n = read(sockfd, recvBuff, sizeof(recvBuff) - 1) > 0) && 
-			 bytesRead < msgSize)
-		{
-			bytesRead += n;
-			strcat(msg, recvBuff);
-		}
-		if (n < 0)
+		if (read(sockfd, msg, msgSize) < 0)
 		{
 			fprintf(stderr, "\nError: Read Error Message failed.\n");
 			logz(LOG_PRFX, "[Error]: Read Error Message has failed.\n");
@@ -241,6 +212,8 @@ int readResponse(int sockfd)
 		}
 
 		logz(LOG_PRFX, "Error Message successfully read.\n");
+
+		strcat(msg, "\n");
 
 		/* Output the message to STDERR */
 		fprintf(stderr, msg);
@@ -255,30 +228,47 @@ int readResponse(int sockfd)
 		return -1;
 	}
 
-	/* Read from the server socket */
-	/*while ( (n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
-	{
-		recvBuff[n] = 0;
-		if(fputs(recvBuff, stdout) == EOF)
-		{
-			printf("\nError: Fputs Failed.\n");
-		}
-
-		
-	}*/
-
-	/* Return error from read */
-	/*if(n < 0)
-	{	
-		return -1;
-	}*/
-
 	return 0;
 }
 
-int getIntFromBuffer(char* buffer, int startIndex)
+int getIntFromBuffer(char* buffer, int startIndex, int size)
 {
-	char charBuff[4] = { buffer[startIndex], buffer[startIndex + 1], buffer[startIndex + 2], buffer[startIndex + 3] };
+	char charBuff[size];
+	int i;
+	
+	for (i = 0; i < size; i++)
+	{
+		charBuff[i] = buffer[startIndex + i];
+	}
 
 	return atoi(charBuff);
+}
+
+int getIntFromRead(int sockfd, char* buffer, char* errMsg)
+{
+	/* Used to cleverly move the buffer pointer to keep adding the integer values to the end of the buffer until a space is hit */
+	int i = 0,
+	    n = 0;
+
+	/* Read until we hit a space, thats the width. */
+	while ((n = read(sockfd, buffer + i, sizeof(char))) > 0)
+	{
+		if (buffer[i] == ' ')
+			break;
+		else
+			i++;
+
+	}
+
+	if (n < 0)
+	{
+		fprintf(stderr, "\nError: %s\n", errMsg);
+		char* msg = "[Error]: ";
+		strcat(msg, errMsg);
+
+		logz(LOG_PRFX, msg);
+		return -1;
+	}
+
+	return getIntFromBuffer(buffer, 0, i);
 }
