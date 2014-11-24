@@ -3,14 +3,22 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <getopt.h>
+
 
 #include "common.h"
 
+int HEIGHT = 20;
+int WIDTH = 20;
+
+struct option longopts[] = {
+{ "height", required_argument, NULL, 'h'},
+{ "width", required_argument, NULL, 'w'},
+{ 0,0,0,0}
+};
+
 void carveText(char* file)
 {
-	int WIDTH = 5;/*these are arbitrery currently*/
-	int HEIGHT = 5;
-
 	char* buff;
 	char singleChar[1];
 	int eof = 1;
@@ -107,6 +115,32 @@ int main(argc, argv)
          * Argument pointer the parent wishes to pass on to its next child
          */
         char* pcChildArgument = NULL;
+	
+	int c;
+
+	while((c = getopt_long(argc, argv, "h:w:", longopts, NULL)) != -1)
+	{
+		switch(c)
+		{
+			case 'w':
+				WIDTH = atoi(optarg);
+				break;
+			case 'h':
+				HEIGHT = atoi(optarg);
+				break;
+			case 0:
+				break;
+			case':':
+				perror("not an option");
+				break;
+			case'?':
+				perror("not an option");
+				break;
+			default:
+				perror("not an option");
+				break;
+		}
+	}
 
 
 	if(/*(fd = open("/dev/asciimap", O_RDWR)) >= 0*/1)
@@ -131,7 +165,10 @@ int main(argc, argv)
 				if(iChildPID == 0)
 				{
 					/*stuff the child does*/
-					carveText(pcChildArgument);
+					if(pcChildArgument[0] != '-')
+					{
+						carveText(pcChildArgument);
+					}
 					/*child terminates*/
 					exit(0);
 				}
