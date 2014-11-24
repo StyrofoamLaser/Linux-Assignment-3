@@ -66,9 +66,7 @@ int main(int argc, char *argv[])
 				exit(1);	
 			}
 
-			msgValidity = interpretMsg(buff, &width, &height);
-			
-			logz(C_PREFIX, msgValidity);	
+			msgValidity = interpretMsg(buff, &width, &height);	
 
 			write(pipeFD[1], msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
@@ -84,9 +82,7 @@ int main(int argc, char *argv[])
 
 		read(pipeFD[0], str, sizeof(str));
 
-		close(pipeFD[0]);
-
-		logz(P_PREFIX, str);	
+		close(pipeFD[0]);	
 
 		logz(P_PREFIX, "Sending msg to socket based on msg validity\n");
 
@@ -123,6 +119,10 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 				write(connfd, sendBuff, strlen(sendBuff));
 				logz(P_PREFIX, "Wrote default /dev/asciimap map to socket.\n");
 			}
+		}
+		else
+		{
+			logz(P_PREFIX, "Failed to access /dev/asciimap.");
 		}
 
 		close(fd);
