@@ -123,8 +123,12 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 		else
 		{
 			logz(P_PREFIX, "Failed to access /dev/asciimap.\n");
-			char* errMsg = "ERROR: /dev/asciimap could not be accessed.0";
-			snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+			
+			char* errMsg = "ERROR: /dev/asciimap could not be accessed.0\n";
+			snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+
+			logz(P_PREFIX, sendBuff);
+
 			write(connfd, sendBuff, strlen(sendBuff));
 		}
 
