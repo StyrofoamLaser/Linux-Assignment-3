@@ -122,7 +122,10 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 		}
 		else
 		{
-			logz(P_PREFIX, "Failed to access /dev/asciimap.");
+			logz(P_PREFIX, "Failed to access /dev/asciimap.\n");
+			char* errMsg = "ERROR: /dev/asciimap could not be accessed.0";
+			snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+			write(connfd, sendBuff, strlen(sendBuff));
 		}
 
 		close(fd);
@@ -167,6 +170,10 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 					/* print an error */
 					fprintf(stderr, "ERROR: Error reading from generated map file\n");
 					logz(P_PREFIX, "Error reading generated map file\n");
+
+					char* errMsg = "ERROR: Error reading from generated map file.0";
+					snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+					write(connfd, sendBuff, strlen(sendBuff));
 				}
 				else
 				{
