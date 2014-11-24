@@ -204,7 +204,7 @@ int readResponse(int sockfd)
 
 		printf("Msg Size: %i\n", msgSize);
 
-		if (read(sockfd, msg, msgSize) < 0)
+		if ((n = read(sockfd, msg, msgSize)) < 0)
 		{
 			fprintf(stderr, "\nError: Read Error Message failed.\n");
 			logz(LOG_PRFX, "[Error]: Read Error Message has failed.\n");

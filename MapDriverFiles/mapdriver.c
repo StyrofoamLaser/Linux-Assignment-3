@@ -162,8 +162,8 @@ static ssize_t device_read(file, buffer, length, offset)
 	printk
 	(
 		"mapdriver::device_read() - Read %d bytes, %d left\n",
-		bytes_read;
-		length;
+		bytes_read,
+		(int)length
 	);
 	#endif
 
@@ -205,7 +205,7 @@ static ssize_t device_write(file, buffer, length, offset)
 	printk
 	(
 		"mapdriver::device_write() - Length: [%d], BufL [%s]\n",
-		length,
+		(int)length,
 		buffer
 	);
 	#endif
