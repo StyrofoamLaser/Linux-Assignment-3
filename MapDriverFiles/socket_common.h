@@ -27,5 +27,7 @@ extern FILE* LOGFD;
 void openLogFile();
 void closeLogFile();
 void logz(char* prefix, char* msg);
+int getIntFromBuffer(char* buffer, int startIndex, int size);
+int getIntFromRead(int sockfd, char* buffer, char* errPrfx, char* errMsg);
 
 #endif
