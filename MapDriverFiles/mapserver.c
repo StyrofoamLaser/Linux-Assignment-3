@@ -66,7 +66,9 @@ int main(int argc, char *argv[])
 				exit(1);	
 			}
 
-			msgValidity = interpretMsg(buff, &width, &height);	
+			msgValidity = interpretMsg(buff, &width, &height);
+
+			logz(C_PREFIX, msgValidity);
 
 			write(pipeFD[1], msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
@@ -78,11 +80,14 @@ int main(int argc, char *argv[])
 
 		close(pipeFD[1]); /* parent is not writing, close the write */
 	
-		char* str = "0";
+		char str[15];
+		memset(str, '0', sizeof(str));
 
 		read(pipeFD[0], str, sizeof(str));
 
-		close(pipeFD[0]);	
+		close(pipeFD[0]);
+		
+		logz(P_PREFIX, str);
 
 		logz(P_PREFIX, "Sending msg to socket based on msg validity\n");
 
@@ -124,7 +129,7 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 		{
 			logz(P_PREFIX, "Failed to access /dev/asciimap.\n");
 			
-			char* errMsg = "ERROR: /dev/asciimap could not be accessed.0\n";
+			char* errMsg = "ERROR: /dev/asciimap could not be accessed.\n";
 			snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
 
 			logz(P_PREFIX, sendBuff);
@@ -176,12 +181,12 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 					logz(P_PREFIX, "Error reading generated map file\n");
 
 					char* errMsg = "ERROR: Error reading from generated map file.0";
-					snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+					snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
 					write(connfd, sendBuff, strlen(sendBuff));
 				}
 				else
 				{
-					snprintf(sendBuff, sizeof(sendBuff), "%s %i %i %s", PROT_MSG, widthString, heightString, generatedMap);
+					snprintf(sendBuff, strlen(sendBuff), "%s %i %i %s", PROT_MSG, widthString, heightString, generatedMap);
 					write(connfd, sendBuff, strlen(sendBuff));
 					logz(P_PREFIX, "Sending msg to socket with generated map\n");
 				}
@@ -194,7 +199,7 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 	else /* Send an Error Message */
 	{
 		char* errMsg = "ERROR: Unrecognized msg protocol.0";
-		snprintf(sendBuff, sizeof(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+		snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
 		write(connfd, sendBuff, strlen(sendBuff));
 		logz(P_PREFIX, "Sending an error msg to socket. Unregistered protocol.\n");
 	}
