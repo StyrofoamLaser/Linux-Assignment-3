@@ -35,20 +35,21 @@ int main(int argc, char *argv[])
 	{
 		connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
 
+
 		/*ticks = time(NULL);
 		snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
 		write(connfd, sendBuff, strlen(sendBuff));*/
 
-		char* msgValidity =" ";
+		char* msgValidity = "";
+
+		int pipeFD[2];
+
+		pipe(pipeFD);
 		
 		int pid = fork();
 
 		char buff[1025];
 		int width, height;
-		
-		int pipeFD[2];
-
-		pipe(pipeFD);
 
 		if (pid == 0)
 		{
@@ -81,7 +82,6 @@ int main(int argc, char *argv[])
 		close(pipeFD[1]); /* parent is not writing, close the write */
 	
 		char str[15];
-		memset(str, '0', sizeof(str));
 
 		read(pipeFD[0], str, sizeof(str));
 
