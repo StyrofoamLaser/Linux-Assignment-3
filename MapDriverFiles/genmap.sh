@@ -137,6 +137,8 @@ printMapToFile()
 		done
 		echo >> $FILE_NAME
 	done
+
+	echo "Printed map to $FILE_NAME" >> genmap.log
 }
 
 echoerr()

@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 
 			msgValidity = interpretMsg(buff, &width, &height);
 
-			logz(C_PREFIX, msgValidity);
+			//logz(C_PREFIX, msgValidity);
 
 			write(pipeFD[1], msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
 		close(pipeFD[0]);
 		
-		logz(P_PREFIX, str);
+		//logz(P_PREFIX, str);
 
 		logz(P_PREFIX, "Sending msg to socket based on msg validity\n");
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int connfd)
 {
-	if (msgValidity == "0") /* Send a default map message */
+	if (strcmp(msgValidity, "0") == 0) /* Send a default map message */
 	{
 		char* deviceMap;
 		int fd;
@@ -139,34 +139,41 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 
 		close(fd);
 	}
-	else if (msgValidity == "1") /* Send a custom map message */
+	else if (strcmp(msgValidity, "1") == 0) /* Send a custom map message */
 	{
 		char* generatedMap;
 
-		int pid = fork();
-
 		char* filename = "map_";
+
+		int pid = fork();
 
 		if (pid == 0)
 		{
 			char pidString[15], widthString[15], heightString[15];
 			iToString(getpid(), pidString);	
 			iToString(*width, widthString);
-			iToString(*height, heightString);	
-			
-			strcat(filename, pidString);
-			execl("./genmap.sh", widthString, heightString, filename);
+			iToString(*height, heightString);
+
+			logz(C_PREFIX, "Generating custom map, about to exec genmap.\n");
+
+			//strcat(filename, pidString);
+
+			execl("genmap.sh", widthString, heightString, filename);
+			exit(-1);
 		}
 		else
 		{
-			wait(0);
+			logz(P_PREFIX, "Waiting for genmap.sh child to complete...\n");
+			int status;
+			waitpid(pid, status, 0);
 
+			logz(P_PREFIX, "Genmap.sh child complete, about to read from given data.\n");
 			char pidString[15], widthString[15], heightString[15];
 			iToString(getpid(), pidString);
 			iToString(*width, widthString);
 			iToString(*height, heightString);
 			
-			strcat(filename, pidString);
+			//strcat(filename, pidString);
 			int fd;
 			
 			if((fd = open(filename, O_RDWR)) >= 0)
@@ -190,6 +197,15 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 					write(connfd, sendBuff, strlen(sendBuff));
 					logz(P_PREFIX, "Sending msg to socket with generated map\n");
 				}
+			}
+			else
+			{
+				logz(P_PREFIX, "Error opening genmap.sh file!\n");
+				fprintf(stderr, "ERROR: Error opening file for input!\n");
+
+				char* errMsg = "ERROR: Error opening generated map file.\n";
+				snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
+				write(connfd, sendBuff, strlen(sendBuff));
 			}
 
 			close(fd);
