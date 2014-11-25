@@ -49,7 +49,8 @@ int main(int argc, char *argv[])
 		int pid = fork();
 
 		char buff[1025];
-		int width, height;
+		char* width;
+		char* height;
 
 		if (pid == 0)
 		{
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 				exit(1);	
 			}
 
-			msgValidity = interpretMsg(buff, &width, &height);
+			msgValidity = interpretMsg(buff, width, height);
 
 			//logz(C_PREFIX, msgValidity);
 
@@ -91,7 +92,7 @@ int main(int argc, char *argv[])
 
 		logz(P_PREFIX, "Sending msg to socket based on msg validity\n");
 
-		sendMsg(str, &width, &height, sendBuff, connfd);
+		sendMsg(str, width, height, sendBuff, connfd);
 
 		logz(P_PREFIX, "Msg written to socket. Closing connection to client.\n");
 		
@@ -100,7 +101,20 @@ int main(int argc, char *argv[])
 	}
 }
 
-void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int connfd)
+int getIntFromBuffer(char* buffer, int startIndex, int size)
+{
+	char charBuff[size];
+	int i;
+	
+	for (i = 0; i < size; i++)
+	{
+		charBuff[i] = buffer[startIndex + i];
+	}
+
+	return atoi(charBuff);
+}
+
+void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int connfd)
 {
 	if (strcmp(msgValidity, "0") == 0) /* Send a default map message */
 	{
@@ -151,14 +165,14 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 		{
 			char pidString[15], widthString[15], heightString[15];
 			iToString(getpid(), pidString);	
-			iToString(*width, widthString);
-			iToString(*height, heightString);
 
 			logz(C_PREFIX, "Generating custom map, about to exec genmap.\n");
+			logz(C_PREFIX, width);
+			logz(C_PREFIX, height);
 
 			//strcat(filename, pidString);
 
-			execl("genmap.sh", widthString, heightString, filename);
+			execl("genmap.sh", width, height, filename);
 			exit(-1);
 		}
 		else
@@ -221,7 +235,7 @@ void sendMsg(char* msgValidity, int *width, int *height, char* sendBuff, int con
 	}
 }
 
-char* interpretMsg(char buff[], int *width, int *height)
+char* interpretMsg(char buff[], char* width, char* height)
 {
 	if (buff[0] == 'M')
 	{
@@ -234,10 +248,19 @@ char* interpretMsg(char buff[], int *width, int *height)
 		else
 		{
 			/* We need a custom size map, parse the width/height */
-			char widthBytes[4] = {buff[2], buff[3], buff[4], buff[5]};
-			char heightBytes[4] = {buff[7], buff[8], buff[9], buff[10]};
-			*width = atoi(widthBytes);
-			*height = atoi(heightBytes);
+			width = &buff[2];
+			
+			int i = 2;
+
+			while (buff[i] == ' ')
+			{
+				i++;
+			}			
+			
+			height = &buff[i];
+			
+			logz(C_PREFIX, width);
+			logz(C_PREFIX, height);			
 			
 			logz(C_PREFIX, "Msg interpreted as custom size from genmap. Validity 1.\n");
 			return "1";
