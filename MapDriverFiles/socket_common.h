@@ -21,11 +21,26 @@
 
 /* Globally accessible File Descriptor for the Log File. Use fprintf with this
  * to output log messages. */
-extern FILE* LOGFD; 
+extern FILE* LOGFD;
 
 /* Functions used to open and close the Log File */
 void openLogFile();
 void closeLogFile();
 void logz(char* prefix, char* msg);
+
+typedef struct _mapmsg_t
+{
+	char msgType,
+	int param,
+	int param2,
+	char* map
+} mapmsg_t;
+
+typedef struct _errmsg_t
+{
+	char msgType,
+	int errLen,
+	char* errMsg
+} errmsg_t;
 
 #endif
