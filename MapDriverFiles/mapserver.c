@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(5000);
+	serv_addr.sin_port = htons(DEF_PORT);
 
 	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
 
@@ -49,8 +49,11 @@ int main(int argc, char *argv[])
 		int pid = fork();
 
 		char buff[1025];
-		char* width;
-		char* height;
+		char width[20];
+		char height[20];
+
+		memset(width, '0', sizeof(width));
+		memset(height, '0', sizeof(height));
 
 		if (pid == 0)
 		{
@@ -68,11 +71,14 @@ int main(int argc, char *argv[])
 				exit(1);	
 			}
 
-			msgValidity = interpretMsg(buff, width, height);
+			msgValidity = interpretMsg(buff);
 
-			//logz(C_PREFIX, msgValidity);
+			/*logz(C_PREFIX, msgValidity);*/
 
-			write(pipeFD[1], msgValidity, sizeof(msgValidity));
+			if (strcmp(msgValidity, "1") == 0)
+				write(pipeFD[1], buff, strlen(buff));
+			else
+				write(pipeFD[1], msgValidity, sizeof(msgValidity));
 			close(pipeFD[1]);
 
 			exit(0);
@@ -82,13 +88,21 @@ int main(int argc, char *argv[])
 
 		close(pipeFD[1]); /* parent is not writing, close the write */
 	
-		char str[15];
+		char str[2];
 
+		/* Read first 2 bytes, that determines what to do next */
 		read(pipeFD[0], str, sizeof(str));
+
+		/* If we have a custom size, grab the width and height */
+		if (strcmp(str, "1 ") == 0)
+		{
+			iToString(getIntFromRead(pipeFD[0], buff, P_PREFIX, "ERROR: Failed to get width.\n"), width);
+			iToString(getIntFromRead(pipeFD[0], buff, P_PREFIX, "ERROR: Failed to get height.\n"), height);
+		}
 
 		close(pipeFD[0]);
 		
-		//logz(P_PREFIX, str);
+		/*logz(P_PREFIX, str);*/
 
 		logz(P_PREFIX, "Sending msg to socket based on msg validity\n");
 
@@ -101,22 +115,9 @@ int main(int argc, char *argv[])
 	}
 }
 
-int getIntFromBuffer(char* buffer, int startIndex, int size)
-{
-	char charBuff[size];
-	int i;
-	
-	for (i = 0; i < size; i++)
-	{
-		charBuff[i] = buffer[startIndex + i];
-	}
-
-	return atoi(charBuff);
-}
-
 void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int connfd)
 {
-	if (strcmp(msgValidity, "0") == 0) /* Send a default map message */
+	if (strcmp(msgValidity, "0 ") == 0) /* Send a default map message */
 	{
 		char* deviceMap;
 		int fd;
@@ -153,7 +154,7 @@ void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int c
 
 		close(fd);
 	}
-	else if (strcmp(msgValidity, "1") == 0) /* Send a custom map message */
+	else if (strcmp(msgValidity, "1 ") == 0) /* Send a custom map message */
 	{
 		char* generatedMap;
 
@@ -167,10 +168,19 @@ void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int c
 			iToString(getpid(), pidString);	
 
 			logz(C_PREFIX, "Generating custom map, about to exec genmap.\n");
-			logz(C_PREFIX, width);
-			logz(C_PREFIX, height);
+			char tmp1[40];
+			char tmp2[40];
 
-			//strcat(filename, pidString);
+			strcpy(tmp1, width);
+			strcpy(tmp2, height);
+
+			strcat(tmp1, "\n");
+			strcat(tmp2, "\n");
+
+			logz(C_PREFIX, tmp1);
+			logz(C_PREFIX, tmp2);
+
+			/*strcat(filename, pidString);*/
 
 			execl("genmap.sh", width, height, filename);
 			exit(-1);
@@ -187,7 +197,7 @@ void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int c
 			iToString(*width, widthString);
 			iToString(*height, heightString);
 			
-			//strcat(filename, pidString);
+			/*strcat(filename, pidString);*/
 			int fd;
 			
 			if((fd = open(filename, O_RDWR)) >= 0)
@@ -201,7 +211,7 @@ void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int c
 					fprintf(stderr, "ERROR: Error reading from generated map file\n");
 					logz(P_PREFIX, "Error reading generated map file\n");
 
-					char* errMsg = "ERROR: Error reading from generated map file.0";
+					char* errMsg = "ERROR: Error reading from generated map file.";
 					snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
 					write(connfd, sendBuff, strlen(sendBuff));
 				}
@@ -228,14 +238,14 @@ void sendMsg(char* msgValidity, char* width, char* height, char* sendBuff, int c
 	}
 	else /* Send an Error Message */
 	{
-		char* errMsg = "ERROR: Unrecognized msg protocol.0";
+		char* errMsg = "ERROR: Unrecognized msg protocol.";
 		snprintf(sendBuff, strlen(sendBuff), "%c %i %s", PROT_ERR, strlen(errMsg), errMsg);
 		write(connfd, sendBuff, strlen(sendBuff));
 		logz(P_PREFIX, "Sending an error msg to socket. Unregistered protocol.\n");
 	}
 }
 
-char* interpretMsg(char buff[], char* width, char* height)
+char* interpretMsg(char buff[])
 {
 	if (buff[0] == 'M')
 	{
@@ -243,31 +253,17 @@ char* interpretMsg(char buff[], char* width, char* height)
 		{
 			/* We want a default map to be sent*/
 			logz(C_PREFIX, "Msg interpreted as default driver map request. Validity 0.\n");
-			return "0";
+			return "0 ";
 		}
 		else
-		{
-			/* We need a custom size map, parse the width/height */
-			width = &buff[2];
-			
-			int i = 2;
-
-			while (buff[i] == ' ')
-			{
-				i++;
-			}			
-			
-			height = &buff[i];
-			
-			logz(C_PREFIX, width);
-			logz(C_PREFIX, height);			
-			
+		{			
+			buff[0] = '1';			
 			logz(C_PREFIX, "Msg interpreted as custom size from genmap. Validity 1.\n");
 			return "1";
 		}
 	}
 	logz(C_PREFIX, "Msg incorrect. Validity -1.\n");
-	return "2";
+	return "2 ";
 }
 
 void iToString(int i, char* str)

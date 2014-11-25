@@ -8,7 +8,5 @@
 void printUsage(char* argv);
 int sendRequest(int sockfd, char* width, char* height);
 int readResponse(int sockfd);
-int getIntFromBuffer(char* buffer, int startIndex, int size);
-int getIntFromRead(int sockfd, char* buffer, char* errMsg);
 
 #endif

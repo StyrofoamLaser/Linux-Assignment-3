@@ -6,22 +6,26 @@ INSTALLATION/COMPILATION:
 1. Run 'make'
 2. Run 'make build'
 
-
 RUNNING:
 
-1. Run 'make run-test' 
+1. Run 'make fork-test' 
+2. Run 'make test'
+3. Run 'make socket-test'
 
 
 CURRENTLY KNOWN BUGS:
 
-(Sort of a bug) - ioctl() cannot be run anywhere but within the driver itself.
-
+- Driver can't be compiled properly
+- Makefile is incomplete (Can't compile the socket from the makefile)
+- Server is unable to open the map file created by genmap.sh
+- Currently does not comply with the project specifications
+- Error messages occaisonally have 0s in them that were not placed there (Particularly at the end)
+- Log file is deleted and remade each server session
+- Client and Server both log to the same file
 
 CONTRIBUTIONS:
 
-Cody: Makefile, Shell Script, and Report
-Vincent: Driver ioctl(), Driver lseek(), modifications to Makefile
+Cody: Makefile, Shell Script, and Report, Server
+Vincent: Driver ioctl(), Driver lseek(), modifications to Makefile, Client/Server
 Robert: Driver variables and setup, driver read(), driver write(), modifications to Makefile
-James: Test program, interpreting text files in the test program
-
-
+James: Test program, interpreting text files in the test program, ASCII Art Names
