@@ -39,7 +39,7 @@ CLIENT_EXE=mapclient.exe
 
 SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) 
 
-H=$(SERVER_H) $(CLIENT_H) common.h 
+H=$(SERVER_H) $(CLIENT_H) common.h socket_common.h
 
 OBJ=$(SRC:.c=.o)  $(DRIVER)
 
@@ -94,8 +94,8 @@ $(DRIVER): mapdriver.h mapdriver.c
 	$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver.c
 
 clean:
-	rm -f $(EXE) $(OBJ)
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	-rm -f $(EXE) $(OBJ)
+	-make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 clean-all: unregister clean
 
