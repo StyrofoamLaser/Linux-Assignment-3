@@ -1,0 +1,10 @@
+Makefile TODO
+1. The 'make' command should compile all of the individual components (such as driver, socket, tests, etc.)
+2. The 'make clean' command should clean all temp files for all components (.o, exes, etc.)
+3. All tests should work
+4. Refactoring/Cleaning Makefile to dynamically do the .c and .o stuff
+5. Add a new command to be able to kill server processes
+6. When server is started, netstat output confirming the server is listening
+
+SRC=ccountln.c (add more files here)
+OBJ=$(SRC:.c=.o)
