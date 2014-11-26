@@ -13,7 +13,8 @@
 #include <stdio.h>
 #include <netinet/in.h>
 
-#define DEF_PORT 5000
+/* Fix port so it runs on 23032 */
+#define DEF_PORT 23032
 #define DEF_IP "127.0.0.1"
 
 #define PROT_MSG 'M'
