@@ -18,30 +18,39 @@ DRIVER=mapdriver.o
 MODULE=mapdriver.ko
 
 FORKTEST_EXE=mapdriver-forkTest.exe
-FORKTEST_OBJ=mapdriver-forkTest.o $(DRIVER)
+FORKTEST_OBJ=mapdriver-forkTest.o
 FORKTEST_SRC=mapdriver-forkTest.c
 FORKTEST_H=mapdriver-forkTest.h
 
 TEST_EXE=mapdriver-test.exe
-TEST_OBJ=mapdriver-test.o $(DRIVER)
+TEST_OBJ=mapdriver-test.o
 TEST_SRC=mapdriver-test.c
 TEST_H=mapdriver-test.h
 
-SERVER_OBJ=mapserver.o $(DRIVER)
+SERVER_OBJ=mapserver.o
 SERVER_SRC=mapserver.c
 SERVER_H=mapserver.h
 SERVER_EXE=mapserver.exe
 
-CLIENT_OBJ=mapclient.o $(DRIVER)
+CLIENT_OBJ=mapclient.o
 CLIENT_SRC=mapclient.c
 CLIENT_H=mapclient.h
 CLIENT_EXE=mapclient.exe
+
+SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) 
+
+H=$(SERVER_H) $(CLIENT_H) common.h 
+
+OBJ=$(SRC:.c=.o)  $(DRIVER)
+
+EXE=$(SRC:.c=.exe)
+
 
 DIR=~/dev/asciimap
 
 obj-m += $(DRIVER)
 
-all: test-exes
+all: compile
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	@echo "Map Driver has been compiled"
 	@echo "Use 'make register' to register the module with the OS"
@@ -49,7 +58,15 @@ all: test-exes
 	@echo "To unregister run 'make unregister' or 'make clean-all'"
 	@echo ""
 
-compile: EXEs $(OBJ)
+.SUFFIXES: .exe
+
+.c.o:
+	$(CC) $(CC_INSTRUCTIONS) $(INC) -c $<
+
+.o.exe:
+	$(CC) $< -o $@
+
+compile: $(EXE) $(H)
 
 register: $(DRIVER)
 	insmod ./$(MODULE)
@@ -59,25 +76,6 @@ register: $(DRIVER)
 	@echo "Map Driver Device has been registered."
 	@echo ""
 
-test-exes: $(FORKTEST_OBJ) $(TEST_OBJ)
-	$(CC) $(FORKTEST_OBJ) -o  $(FORKTEST_EXE)
-	$(CC) $(TEST_OBJ) -o $(TEST_EXE) 
-
-socket-exes: $(SERVER_OBJ) $(CLIENT_OBJ)
-	$(CC) $(SERVER_OBJ) -o $(SERVER_EXE)
-	$(CC) $(CLIENT_OBJ) -o $(CLIENT_EXE)
-
-$(FORKTEST_OBJ): $(FORKTEST_SRC) common.h
-	$(CC) $(CC_INSTRUCTIONS) $(INC) -c $(FORKTEST_SRC)
-
-$(TEST_OBJ): $(TEST_SRC) common.h
-	$(CC) $(CC_INSTRUCTIONS) $(INC) -c $(TEST_SRC)
-
-$(SERVER_OBJ): $(SERVER_SRC) common.h
-	$(CC) $(CC_INSTRUCTIONS) $(INC) -c $(SERVER_SRC)
-
-$(CLIENT_OBJ): $(CLIENT_SRC) common.h
-	$(CC) $(CC_INSTRUCTIONS) $(INC) -c $(CLIENT_SRC)
 
 setup:
 ifeq (, $(wildcard $(DIR)))
@@ -101,13 +99,13 @@ clean:
 
 clean-all: unregister clean
 
-fork-test:  test-exes
+fork-test:  $(FORKTEST_EXE)
 	./$(FORKTEST_EXE)
 
-test: test-exes
+test: $(TEST_EXE)
 	./$(TEST_EXE)
 
-socket-test: socket-exes
+socket-test: $(SERVER_EXE) $(CLIENT_EXE)
 	./$(SERVER_EXE)&
 	./$(CLIENT_EXE)
 	
