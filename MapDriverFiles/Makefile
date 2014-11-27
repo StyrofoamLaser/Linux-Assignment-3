@@ -37,7 +37,10 @@ CLIENT_SRC=mapclient.c
 CLIENT_H=mapclient.h
 CLIENT_EXE=mapclient.exe
 
-SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) 
+DEPENDENCY=socket_common.c
+DEPEND_OBJ=$(DEPENDENCY:.c=.o)
+
+SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) $(DEPENDENCY)
 
 H=$(SERVER_H) $(CLIENT_H) common.h socket_common.h
 
@@ -50,7 +53,7 @@ DIR=~/dev/asciimap
 
 obj-m += $(DRIVER)
 
-all: compile
+all: depend compile
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	@echo "Map Driver has been compiled"
 	@echo "Use 'make register' to register the module with the OS"
@@ -65,6 +68,10 @@ all: compile
 
 .o.exe:
 	$(CC) $< -o $@
+
+depend: $(DEPEND_OBJ) $(CLIENT_OBJ) $(SERVER_OBJ)
+	$(CC) $(CLIENT_OBJ) $(DEPEND_OBJ) -o $(CLIENT_EXE)
+	$(CC) $(SERVER_OBJ) $(DEPEND_OBJ) -o $(SERVER_EXE)
 
 compile: $(EXE) $(H)
 
