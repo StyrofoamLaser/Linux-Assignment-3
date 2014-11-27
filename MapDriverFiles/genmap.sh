@@ -20,6 +20,7 @@ declare -A MAP
 
 main()
 {
+	echo "Began genmap.sh"
 	if [ $NUM_ARGS -eq 0 ]
 	then
 		# If the user enters no arguments, generate a map of the default size
@@ -51,6 +52,7 @@ main()
 
 generateMap()
 {
+	echo "Generating map..."
 	mapValid=0
 
 	numAttempts=0
@@ -127,6 +129,7 @@ printMap()
 # Print the map to a file
 printMapToFile()
 {
+	echo "Printing to file"
 	f2="%1s"
 	
 	for (( i=1; i<$MAP_WIDTH; i++ ))
@@ -139,6 +142,7 @@ printMapToFile()
 	done
 
 	echo "Printed map to $FILE_NAME" >> genmap.log
+	exit 0
 }
 
 echoerr()
