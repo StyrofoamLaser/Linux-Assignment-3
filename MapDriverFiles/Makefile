@@ -69,9 +69,13 @@ all: depend compile
 .o.exe:
 	$(CC) $< -o $@
 
-depend: $(DEPEND_OBJ) $(CLIENT_OBJ) $(SERVER_OBJ)
-	$(CC) $(CLIENT_OBJ) $(DEPEND_OBJ) -o $(CLIENT_EXE)
+depend: $(SERVER_EXE) $(CLIENT_EXE)
+
+$(SERVER_EXE): $(DEPEND_OBJ) $(SERVER_OBJ)
 	$(CC) $(SERVER_OBJ) $(DEPEND_OBJ) -o $(SERVER_EXE)
+
+$(CLIENT_EXE): $(DEPEND_OBJ) $(CLIENT_OBJ)
+	$(CC) $(CLIENT_OBJ) $(DEPEND_OBJ) -o $(CLIENT_EXE)
 
 compile: $(EXE) $(H)
 
