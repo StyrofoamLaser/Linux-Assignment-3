@@ -10,7 +10,8 @@ DEBUG=-g -D_DEBUG
 DEFINE=-DMODULE -D__KERNEL__ -DLINUX
 WARNINGS=-Wall -Wmissing-prototypes -Wmissing-declarations
 #ISO=-ansi
-CC_INSTRUCTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG) $(DEFINE)
+CC_INSTRUCTIONS=-O1 $(WARNINGS) $(ISO) $(DEBUG)
+CC_DRIVER= $(CC_INSTRUCTION) $(DEFINE)
 
 INC=-I. -I/usr/include -I/usr/src/kernels/`uname -r`/include
 
@@ -102,7 +103,7 @@ unregister:
 	rmmod mapdriver
 
 $(DRIVER): mapdriver.h mapdriver.c
-	$(CC) $(CC_INSTRUCTIONS) $(INC) -c mapdriver.c
+	$(CC) $(CC_DRIVER) $(INC) -c mapdriver.c
 
 clean:
 	-rm -f $(EXE) $(OBJ)
