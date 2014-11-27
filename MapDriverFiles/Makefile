@@ -41,7 +41,7 @@ CLIENT_EXE=mapclient.exe
 DEPENDENCY=socket_common.c
 DEPEND_OBJ=$(DEPENDENCY:.c=.o)
 
-SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) $(DEPENDENCY)
+SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC)
 
 H=$(SERVER_H) $(CLIENT_H) common.h socket_common.h
 
