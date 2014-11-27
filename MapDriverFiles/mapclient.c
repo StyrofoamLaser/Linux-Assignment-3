@@ -107,9 +107,9 @@ int main(int argc, char* argv[])
 
 void printUsage(char* argv)
 {
-	printf("\n Usage: %s \n", argv[0]);
-	printf("\n Usage: %s <width of map> <height of map>\n", argv[0]);
-        printf("\n Usage: %s <ip of server> <width of map> <height of map> \n",argv);
+	printf("\n Usage: %s \n", argv);
+	printf("\n Usage: %s <width of map> <height of map>\n", argv);
+        printf("\n Usage: %s <ip of server> <width of map> <height of map> \n", argv);
 }
 
 int sendRequest(int sockfd, int width, int height)
@@ -146,7 +146,6 @@ int readResponse(int sockfd)
 {
 	syslog(LOG_INFO, "Attempting to Read Response Type.\n");
 
-	int n = 0;
 	char msgType = ' ';
 
 	/* Read the first character, this determines what kind of message it is */
@@ -219,12 +218,10 @@ int readResponse(int sockfd)
 		syslog(LOG_INFO, "Error Message length successfully read.\n");
 		syslog(LOG_INFO, "Attempting to read Error Message.\n");
 
-		n = 0;
-		int bytesRead = 0;
 		char* errMsg;
 
 		/* Read the message into our char* */
-		if ((n = read(sockfd, &errMsg, msgSize)) < 0)
+		if (read(sockfd, &errMsg, msgSize) < 0)
 		{
 			fprintf(stderr, "\nError: Read Error Message failed.\n");
 			syslog(LOG_ERR, "[Error]: Read Error Message has failed.\n");
