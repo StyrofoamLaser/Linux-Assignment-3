@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <netinet/in.h>
+#include <syslog.h>
 
 /* Fix port so it runs on 23032 */
 #define DEF_PORT 23032
@@ -33,17 +34,17 @@ int getIntFromRead(int sockfd, char* buffer, char* errPrfx, char* errMsg);
 
 typedef struct _mapmsg_t
 {
-	char msgType,
-	int param,
-	int param2,
-	char* map
+	char msgType;
+	int param;
+	int param2;
+	char* map;
 } mapmsg_t;
 
 typedef struct _errmsg_t
 {
-	char msgType,
-	int errLen,
-	char* errMsg
+	char msgType;
+	int errLen;
+	char* errMsg;
 } errmsg_t;
 
 #endif

@@ -3,10 +3,10 @@
 
 #include <netdb.h>
 
-#define LOG_PRFX "Client -"
+#define LOG_PRFX "CLIENT -"
 
 void printUsage(char* argv);
-int sendRequest(int sockfd, char* width, char* height);
+int sendRequest(int sockfd, int width, int height);
 int readResponse(int sockfd);
 
 #endif
