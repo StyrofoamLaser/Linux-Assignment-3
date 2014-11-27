@@ -14,7 +14,6 @@
 #include <netinet/in.h>
 #include <syslog.h>
 
-/* Fix port so it runs on 23032 */
 #define DEF_PORT 23032
 #define DEF_IP "127.0.0.1"
 
