@@ -9,15 +9,10 @@ int main(int argc, char *argv[])
 	int listenfd = 0, connfd = 0; /* listenfd is the file descriptor for the socket the server listens to. connfd is the descriptor given when the handshake is done. Represents "file" they are working with. */
 	struct sockaddr_in serv_addr;
 
-	FILE* fp = fopen("map_socket.log", "r");
-	if (fp != NULL)
-	{
-		fclose(fp);
-		remove("map_socket.log");
-	}
-
 	char sendBuff[1025];
 	time_t ticks; 
+
+	openlog(LOG_PRFX, LOG_PID, LOG_USER);
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	memset(&serv_addr, '0', sizeof(serv_addr));
@@ -59,12 +54,12 @@ int main(int argc, char *argv[])
 
 			close(pipeFD[0]); /* our child is only writing to the pipe, close read */
 
-			logz(C_PREFIX, "About to check the socket for a message, and evaluate it's validity.\n");
+			syslog(LOG_INFO, "About to check the socket for a message, and evaluate it's validity.\n");
 			if(n = read(connfd, &msg, sizeof(mapmsg_t)) < 0)
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading from socket.\n");
-				logz(C_PREFIX, "Error reading from socket.\n");
+				syslog(LOG_INFO, "Error reading from socket.\n");
 				exit(1);	
 			}
 
@@ -96,15 +91,16 @@ int main(int argc, char *argv[])
 		
 		/*logz(P_PREFIX, str);*/
 
-		logz(P_PREFIX, "Sending msg to socket based on msg validity\n");
+		syslog(LOG_INFO, "Sending msg to socket based on msg validity\n");
 
 		sendMsg(validity, theMsg, sendBuff, connfd);
 
-		logz(P_PREFIX, "Msg written to socket. Closing connection to client.\n");
+		syslog(LOG_INFO, "Msg written to socket. Closing connection to client.\n");
 		
 		close(connfd);
 		sleep(1);
 	}
+	closelog();
 }
 
 void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
@@ -123,7 +119,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			{
 				/* print an error */
 				fprintf(stderr, "ERROR: Error reading from /dev/asciimap\n");
-				logz(P_PREFIX, "Error reading from /dev/asciimap\n");
+				syslog(LOG_INFO, "Error reading from /dev/asciimap\n");
 			}
 			else
 			{
@@ -134,12 +130,12 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 				msg.map = deviceMap;
 
 				write(connfd, &msg, sizeof(mapmsg_t));
-				logz(P_PREFIX, "Wrote default /dev/asciimap map to socket.\n");
+				syslog(LOG_INFO, "Wrote default /dev/asciimap map to socket.\n");
 			}
 		}
 		else
 		{
-			logz(P_PREFIX, "Failed to access /dev/asciimap.\n");
+			syslog(LOG_INFO, "Failed to access /dev/asciimap.\n");
 			
 			char* errMsg = "ERROR: /dev/asciimap could not be accessed.\n";
 			
@@ -147,8 +143,6 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			error.msgType = PROT_ERR;
 			error.errLen = strlen(errMsg);
 			error.errMsg = errMsg;		
-
-			logz(P_PREFIX, sendBuff);
 
 			write(connfd, &error, sizeof(errmsg_t));
 		}
@@ -170,7 +164,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			iToString(srcMsg.param, widthString);
 			iToString(srcMsg.param2, heightString);
 
-			logz(C_PREFIX, "Generating custom map, about to exec genmap.\n");
+			syslog(LOG_INFO, "Generating custom map, about to exec genmap.\n");
 			char tmp1[40];
 			char tmp2[40];
 
@@ -180,23 +174,23 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			strcat(tmp1, "\n");
 			strcat(tmp2, "\n");
 
-			logz(C_PREFIX, tmp1);
-			logz(C_PREFIX, tmp2);
+			syslog(LOG_INFO, tmp1);
+			syslog(LOG_INFO, tmp2);
 
 			/*strcat(filename, pidString);*/
 			int execStatus;
 			execStatus = execl("./genmap.sh", "./genmap.sh", widthString, heightString, filename, NULL);
-			printf("%i", execStatus);
-			logz(C_PREFIX, "ERROR: Exec failed!\n");
+			//printf("%i", execStatus);
+			syslog(LOG_INFO, "ERROR: Exec failed!\n");
 			exit(-1);
 		}
 		else
 		{
-			logz(P_PREFIX, "Waiting for genmap.sh child to complete...\n");
+			syslog(LOG_INFO, "Waiting for genmap.sh child to complete...\n");
 			int status;
 			waitpid(pid, status, 0);
 
-			logz(P_PREFIX, "Genmap.sh child complete, about to read from given data.\n");
+			syslog(LOG_INFO, "Genmap.sh child complete, about to read from given data.\n");
 			char pidString[15], widthString[15], heightString[15];
 			iToString(getpid(), pidString);
 			iToString(srcMsg.param, widthString);
@@ -214,7 +208,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 				{
 					/* print an error */
 					fprintf(stderr, "ERROR: Error reading from generated map file\n");
-					logz(P_PREFIX, "Error reading generated map file\n");
+					syslog(LOG_INFO, "Error reading generated map file\n");
 
 					char* errMsg = "ERROR: Error reading from generated map file.";					
 					errmsg_t error;
@@ -233,12 +227,12 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 					msg.map = generatedMap;
 
 					write(connfd, &msg, sizeof(mapmsg_t));
-					logz(P_PREFIX, "Sending msg to socket with generated map\n");
+					syslog(LOG_INFO, "Sending msg to socket with generated map\n");
 				}
 			}
 			else
 			{
-				logz(P_PREFIX, "Error opening genmap.sh file!\n");
+				syslog(LOG_INFO, "Error opening genmap.sh file!\n");
 				fprintf(stderr, "ERROR: Error opening file for input!\n");
 
 				char* errMsg = "ERROR: Error opening generated map file.\n";
@@ -265,7 +259,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 		error.errMsg = errMsg;
 
 		write(connfd, &error, sizeof(errmsg_t));
-		logz(P_PREFIX, "Sending an error msg to socket. Unregistered protocol.\n");
+		syslog(LOG_INFO, "Sending an error msg to socket. Unregistered protocol.\n");
 	}
 }
 
@@ -276,16 +270,16 @@ int interpretMsg(mapmsg_t msg)
 		if (msg.param == 0)
 		{
 			/* We want a default map to be sent*/
-			logz(C_PREFIX, "Msg interpreted as default driver map request. Validity 0.\n");
+			syslog(LOG_INFO, "Msg interpreted as default driver map request. Validity 0.\n");
 			return 0;
 		}
 		else
 		{						
-			logz(C_PREFIX, "Msg interpreted as custom size from genmap. Validity 1.\n");
+			syslog(LOG_INFO, "Msg interpreted as custom size from genmap. Validity 1.\n");
 			return 1;
 		}
 	}
-	logz(C_PREFIX, "Msg incorrect. Validity -1.\n");
+	syslog(LOG_INFO, "Msg incorrect. Validity -1.\n");
 	return -1;
 }
 
