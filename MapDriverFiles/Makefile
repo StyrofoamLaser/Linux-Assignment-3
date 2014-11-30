@@ -106,7 +106,7 @@ $(DRIVER): mapdriver.h mapdriver.c
 	$(CC) $(CC_DRIVER) $(INC) -c mapdriver.c
 
 clean:
-	-rm -f $(EXE) $(OBJ)
+	-rm -f $(EXE) $(OBJ) $(DEPEND_OBJ)
 	-make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 clean-all: unregister clean
@@ -119,5 +119,9 @@ test: $(TEST_EXE)
 
 socket-test: $(SERVER_EXE) $(CLIENT_EXE)
 	./$(SERVER_EXE)&
+	ss -pa | grep $(SERVER_EXE)
 	./$(CLIENT_EXE)
+
+kill-server:
+	pkill -f ./$(SERVER_EXE)
 	
