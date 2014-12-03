@@ -20,17 +20,6 @@
 #define PROT_MSG 'M'
 #define PROT_ERR 'E'
 
-/* Globally accessible File Descriptor for the Log File. Use fprintf with this
- * to output log messages. */
-extern FILE* LOGFD;
-
-/* Functions used to open and close the Log File */
-void openLogFile();
-void closeLogFile();
-void logz(char* prefix, char* msg);
-int getIntFromBuffer(char* buffer, int startIndex, int size);
-int getIntFromRead(int sockfd, char* buffer, char* errPrfx, char* errMsg);
-
 typedef struct _mapmsg_t
 {
 	char msgType;
@@ -45,5 +34,8 @@ typedef struct _errmsg_t
 	int errLen;
 	char* errMsg;
 } errmsg_t;
+
+int sizeofM(mapmsg_t msg);
+int sizeofE(errmsg_t msg);
 
 #endif

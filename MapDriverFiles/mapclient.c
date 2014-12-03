@@ -164,7 +164,7 @@ int readResponse(int sockfd)
 
 		int width = 0,
 		    height = 0;
-		char* map;
+		char* map;	
 		
 		/* Read the Width */
 		if (read(sockfd, &width, sizeof(int)) < 0)
@@ -218,10 +218,11 @@ int readResponse(int sockfd)
 		syslog(LOG_INFO, "Error Message length successfully read.\n");
 		syslog(LOG_INFO, "Attempting to read Error Message.\n");
 
-		char* errMsg;
+		char errMsg[msgSize];
+		memset(errMsg, '0', sizeof(errMsg));
 
 		/* Read the message into our char* */
-		if (read(sockfd, &errMsg, msgSize) < 0)
+		if (read(sockfd, &errMsg, sizeof(errMsg)) < 0)
 		{
 			fprintf(stderr, "\nError: Read Error Message failed.\n");
 			syslog(LOG_ERR, "[Error]: Read Error Message has failed.\n");

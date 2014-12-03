@@ -137,14 +137,20 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 		{
 			syslog(LOG_INFO, "Failed to access /dev/asciimap.\n");
 			
-			char* errMsg = "ERROR: /dev/asciimap could not be accessed.\n";
+			/*char* errMsg = "ERROR: /dev/asciimap could not be accessed.\n";*/
+			char errMsg[44];
+			memcpy(errMsg, "ERROR: /dev/asciimap could not be accessed.\n", sizeof(errMsg));
 			
 			errmsg_t error;
 			error.msgType = PROT_ERR;
 			error.errLen = strlen(errMsg);
-			error.errMsg = errMsg;		
+			error.errMsg = &errMsg[0];		
 
-			write(connfd, &error, sizeof(errmsg_t));
+			/*write(connfd, &error, sizeofE(error));*/
+			/*write(connfd, &error, sizeof(error) + strlen(errMsg));?*/
+			write(connfd, &error.msgType, sizeof(char));
+			write(connfd, &error.errLen, sizeof(int));
+			write(connfd, &errMsg, strlen(errMsg));
 		}
 
 		close(fd);
@@ -180,7 +186,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			/*strcat(filename, pidString);*/
 			int execStatus;
 			execStatus = execl("./genmap.sh", "./genmap.sh", widthString, heightString, filename, NULL);
-			//printf("%i", execStatus);
+			/*printf("%i", execStatus);*/
 			syslog(LOG_INFO, "ERROR: Exec failed!\n");
 			exit(-1);
 		}
@@ -246,7 +252,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			}
 
 			close(fd);
-			//remove(filename);
+			/*remove(filename);*/
 		}
 	}
 	else /* Send an Error Message */
