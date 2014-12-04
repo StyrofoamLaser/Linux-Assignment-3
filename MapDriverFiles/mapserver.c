@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 
 	char sendBuff[1025];
-	time_t ticks; 
 
 	openlog(LOG_PRFX, LOG_PID, LOG_USER);
 
@@ -44,8 +43,6 @@ int main(int argc, char *argv[])
 		int pid = fork();
 
 		mapmsg_t msg;
-		int width;
-		int height;
 
 		if (pid == 0)
 		{
@@ -54,18 +51,45 @@ int main(int argc, char *argv[])
 
 			close(pipeFD[0]); /* our child is only writing to the pipe, close read */
 
+			mapmsg_t receivedMsg;
+			char type;
+			int width;
+			int height;
+
 			syslog(LOG_INFO, "About to check the socket for a message, and evaluate it's validity.\n");
-			if(n = read(connfd, &msg, sizeof(mapmsg_t)) < 0)
+
+			if((n = read(connfd, &type, sizeof(char))) < 0)
 			{
 				/* print error */
-				fprintf(stderr, "ERROR: Error reading from socket.\n");
-				syslog(LOG_INFO, "Error reading from socket.\n");
+				fprintf(stderr, "ERROR: Error reading type from socket.\n");
+				syslog(LOG_INFO, "Error reading type from socket.\n");
 				exit(1);	
 			}
+			else syslog(LOG_INFO, "Read client msg type from socket.\n");
 
-			msgValidity = interpretMsg(msg);
+			if((n = read(connfd, &width, sizeof(int))) < 0)
+			{
+				/* print error */
+				fprintf(stderr, "ERROR: Error reading width from socket.\n");
+				syslog(LOG_INFO, "Error reading width from socket.\n");
+				exit(1);	
+			}
+			else syslog(LOG_INFO, "Read client msg width from socket.\n");
 
-			/*logz(C_PREFIX, msgValidity);*/
+			if((n = read(connfd, &height, sizeof(char))) < 0)
+			{
+				/* print error */
+				fprintf(stderr, "ERROR: Error reading height from socket.\n");
+				syslog(LOG_INFO, "Error reading height from socket.\n");
+				exit(1);	
+			}
+			else syslog(LOG_INFO, "Read client msg height from socket.\n");
+
+			receivedMsg.msgType = type;
+			receivedMsg.param = width;
+			receivedMsg.param2 = height;
+
+			msgValidity = interpretMsg(receivedMsg);
 
 			write(pipeFD[1], &msgValidity, sizeof(int));
 			write(pipeFD[1], &msg, sizeof(mapmsg_t));
@@ -107,7 +131,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 {
 	if (msgValidity == 0) /* Send a default map message */
 	{
-		char deviceMap[1024];
+		char deviceMap[2551];
 		int fd;
 
 		if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
@@ -123,41 +147,87 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			}
 			else
 			{
-				mapmsg_t msg;
-				msg.msgType = PROT_MSG;
-				msg.param = 50;
-				msg.param2 = 50;
-				msg.map = deviceMap;
+				char msgType = PROT_MSG;
+				int width = 50;
+				int height = 50;
+				char mapArray[sizeof(deviceMap)];
+				memcpy(mapArray, deviceMap, sizeof(mapArray));
 
-				write(connfd, &msg, sizeof(mapmsg_t));
-				syslog(LOG_INFO, "Wrote default /dev/asciimap map to socket.\n");
+				if (write(connfd, &msgType, sizeof(char)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing msg type to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing msg type to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote default map msgType to socket.\n");
+
+				if (write(connfd, &width, sizeof(int)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing width to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing width to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote default map width to socket.\n");
+
+				if (write(connfd, &height, sizeof(int)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing height to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing height to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote default map height to socket.\n");
+
+				if (write(connfd, &mapArray, sizeof(mapArray)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing map to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing map to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote default map to socket.\n");
+
+				
+				syslog(LOG_INFO, "Wrote default /dev/asciimap map information to socket.\n");
 			}
 		}
 		else
 		{
 			syslog(LOG_INFO, "Failed to access /dev/asciimap.\n");
 			
-			/*char* errMsg = "ERROR: /dev/asciimap could not be accessed.\n";*/
+			char msgType = PROT_ERR;
+			char errLen = 44;
 			char errMsg[44];
-			memcpy(errMsg, "ERROR: /dev/asciimap could not be accessed.\n", sizeof(errMsg));
-			
-			errmsg_t error;
-			error.msgType = PROT_ERR;
-			error.errLen = strlen(errMsg);
-			error.errMsg = &errMsg[0];		
+			memcpy(errMsg, "ERROR: /dev/asciimap could not be accessed.\n", sizeof(errMsg));		
 
-			/*write(connfd, &error, sizeofE(error));*/
-			/*write(connfd, &error, sizeof(error) + strlen(errMsg));?*/
-			write(connfd, &error.msgType, sizeof(char));
-			write(connfd, &error.errLen, sizeof(int));
-			write(connfd, &errMsg, strlen(errMsg));
+			if (write(connfd, &msgType, sizeof(char)) < 0)
+			{
+				fprintf(stderr, "\nError: Writing error type to Server Socket failed.\n");
+				syslog(LOG_ERR, "[Error]: Writing error type to Server Socket has failed.\n");
+			 	exit(-1);
+			}
+			else syslog(LOG_INFO, "Wrote /dev/asciimap error type to socket.\n");
+			
+			if (write(connfd, &errLen, sizeof(int)) < 0)
+			{
+				fprintf(stderr, "\nError: Writing error length to Server Socket failed.\n");
+				syslog(LOG_ERR, "[Error]: Writing error length to Server Socket has failed.\n");
+			 	exit(-1);
+			}
+			else syslog(LOG_INFO, "Wrote /dev/asciimap error length to socket.\n");
+
+			if (write(connfd, &errMsg, sizeof(errMsg)) < 0)
+			{
+				fprintf(stderr, "\nError: Writing error msg to Server Socket failed.\n");
+				syslog(LOG_ERR, "[Error]: Writing error msg to Server Socket has failed.\n");
+			 	exit(-1);
+			}
+			else syslog(LOG_INFO, "Wrote /dev/asciimap error msg to socket\n");
 		}
 
 		close(fd);
 	}
 	else if (msgValidity == 1) /* Send a custom map message */
 	{
-		char generatedMap[1024];
+		char generatedMap[srcMsg.param * srcMsg.param2];
 
 		char* filename = "./map_";
 
@@ -193,7 +263,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 		else
 		{
 			syslog(LOG_INFO, "Waiting for genmap.sh child to complete...\n");
-			int status;
+			int status = 0;
 			waitpid(pid, status, 0);
 
 			syslog(LOG_INFO, "Genmap.sh child complete, about to read from given data.\n");
@@ -216,23 +286,77 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 					fprintf(stderr, "ERROR: Error reading from generated map file\n");
 					syslog(LOG_INFO, "Error reading generated map file\n");
 
-					char* errMsg = "ERROR: Error reading from generated map file.";					
-					errmsg_t error;
-					error.msgType = PROT_ERR;
-					error.errLen = strlen(errMsg);
-					error.errMsg = errMsg;		
+					char* errMsg = "ERROR: Error reading from generated map file.\n";					
+					char msgType = PROT_ERR;
+					int errLen = strlen(errMsg);
+					char msg[errLen];
+					memcpy(msg, &errMsg, sizeof(msg));	
 	
-					write(connfd, &error, sizeof(errmsg_t));
+					if (write(connfd, &msgType, sizeof(char)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing error type to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing error type to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote error type to socket.\n");
+
+					if (write(connfd, &errLen, sizeof(int)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing error length to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing error length to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote error type to socket.\n");
+
+					if (write(connfd, &msg, sizeof(msg)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing error msg to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing error msg to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote error msg to socket.\n");
 				}
 				else
 				{
-					mapmsg_t msg;
-					msg.msgType = PROT_MSG;
-					msg.param = srcMsg.param;
-					msg.param2 = srcMsg.param2;
-					msg.map = generatedMap;
+					char msgType = PROT_MSG;
+					int width = srcMsg.param;
+					int height = srcMsg.param2;
+					char map[sizeof(generatedMap)];
+					memcpy(map, generatedMap, sizeof(map));
 
-					write(connfd, &msg, sizeof(mapmsg_t));
+					if (write(connfd, &msgType, sizeof(char)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing map msg type to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing map msg type to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote map msg type to socket.\n");
+
+					if (write(connfd, &width, sizeof(int)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing map width to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing map width to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote map width to socket.\n");
+
+
+					if (write(connfd, &height, sizeof(int)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing map height to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing map height to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote map height to socket.\n");
+
+					if (write(connfd, &map, sizeof(map)) < 0)
+					{
+						fprintf(stderr, "\nError: Writing map to Server Socket failed.\n");
+						syslog(LOG_ERR, "[Error]: Writing map to Server Socket has failed.\n");
+					 	exit(-1);
+					}
+					else syslog(LOG_INFO, "Wrote map to socket.\n");
+
 					syslog(LOG_INFO, "Sending msg to socket with generated map\n");
 				}
 			}
@@ -243,16 +367,38 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 
 				char* errMsg = "ERROR: Error opening generated map file.\n";
 				
-				errmsg_t error;
-				error.msgType = PROT_ERR;
-				error.errLen = strlen(errMsg);
-				error.errMsg = errMsg;		
+				char msgType = PROT_ERR;
+				int errLen = strlen(errMsg);
+				char msg[errLen];
+				memcpy(msg, errMsg, sizeof(msg));	
 
-				write(connfd, &error, sizeof(errmsg_t));
+				if (write(connfd, &msgType, sizeof(char)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing err type to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing err type to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote error msg type to socket.\n");
+	
+				if (write(connfd, &errLen, sizeof(int)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing err length to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing err length to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote error length type to socket.\n");
+
+				if (write(connfd, &msg, sizeof(msg)) < 0)
+				{
+					fprintf(stderr, "\nError: Writing err msg to Server Socket failed.\n");
+					syslog(LOG_ERR, "[Error]: Writing err msg to Server Socket has failed.\n");
+				 	exit(-1);
+				}
+				else syslog(LOG_INFO, "Wrote error msg to socket.\n");
 			}
 
 			close(fd);
-			/*remove(filename);*/
+			remove(filename);
 		}
 	}
 	else /* Send an Error Message */
