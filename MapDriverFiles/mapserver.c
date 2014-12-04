@@ -17,8 +17,34 @@ int main(int argc, char *argv[])
 	memset(&serv_addr, '0', sizeof(serv_addr));
 	memset(sendBuff, '0', sizeof(sendBuff)); 
 
+	char* ip;
+
+	if (argc == 2)
+	{
+		ip = argv[1];
+		syslog(LOG_INFO, "%s", argv[1]);
+	}
+	else if (argc == 1)
+	{
+		ip = DEF_IP;
+		syslog(LOG_INFO, DEF_IP);
+	}
+	else
+	{
+		fprintf(stdout, "%s", "USAGE: ./mapserver.exe || ./mapserver.exe [IP]");
+		syslog(LOG_INFO, "Incorrect number of args provided. Aborting and printing usage.\n");
+	}
+
+	if(inet_pton(AF_INET, ip, &serv_addr.sin_addr) <= 0)
+	{
+		fprintf(stderr, "\nError: inet_pton Failed.\n");
+		syslog(LOG_ERR, "[Error]: IP Address Conversion has failed!\n");
+		return 1;
+	} 
+
+	syslog(LOG_INFO, "IP Address successfully created.\n");
+
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(DEF_PORT);
 
 	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
@@ -137,6 +163,8 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 
 		if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
 		{
+			lseek(fd, 0, SEEK_SET);
+
 			int n;
 			n = read(fd, deviceMap, 2551);
 			
