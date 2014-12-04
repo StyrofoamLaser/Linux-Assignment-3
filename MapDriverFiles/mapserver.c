@@ -76,19 +76,22 @@ int main(int argc, char *argv[])
 			}
 			else syslog(LOG_INFO, "Read client msg width from socket.\n");
 
-			if((n = read(connfd, &height, sizeof(char))) < 0)
+			if (width != 0)
 			{
-				/* print error */
-				fprintf(stderr, "ERROR: Error reading height from socket.\n");
-				syslog(LOG_INFO, "Error reading height from socket.\n");
-				exit(1);	
+				if((n = read(connfd, &height, sizeof(char))) < 0)
+				{
+					/* print error */
+					fprintf(stderr, "ERROR: Error reading height from socket.\n");
+					syslog(LOG_INFO, "Error reading height from socket.\n");
+					exit(1);	
+				}
+				else syslog(LOG_INFO, "Read client msg height from socket.\n");
+				receivedMsg.param2 = height;
 			}
-			else syslog(LOG_INFO, "Read client msg height from socket.\n");
 
 			receivedMsg.msgType = type;
 			receivedMsg.param = width;
-			receivedMsg.param2 = height;
-
+			
 			msgValidity = interpretMsg(receivedMsg);
 
 			write(pipeFD[1], &msgValidity, sizeof(int));
