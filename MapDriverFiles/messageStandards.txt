@@ -1,0 +1,57 @@
+=================================
+READ
+=================================
+
+- Use local variables of the type needed to be read to store the values. The variables you need will be determined after reading the first byte (which should be a char) from every message.
+
+- All read statements should check their return value and output error messages should any value be less than 0.
+
+- Always read information in the order the struct is declared to avoid discrepencies and bugs.
+
+- For messages (specifically strings), use a char array of the exact size of the message for reading.
+	- If reading a char array, always memset it before reading.
+
+- Always use sizeof(datatype) for reading, it helps prevent odd bugs.
+
+Example:
+	char map[mapSize];
+	memset(map, '0', sizeof(map));
+		
+	if(read(sockfd, &map, sizeof(map)) < 0)
+	{
+		fprintf(stderr, "\nError: Reading Map failed.\n");
+		syslog(LOG_ERR, "[Error]: Reading Map has failed.\n");
+		return -1;
+	}
+
+
+=================================
+WRITE
+=================================
+
+- Predetermine all of the variables being sent before writing any of them to the socket.
+
+- Only write the information that is needed to be sent and always send it in the same order as the struct is declared. This helps avoid potential discrepencies.
+
+- All write statements should check their return value and output error messages should any value be less than 0.
+
+- For messages (specifically strings), use a char array of the exact size of the message (keeps things simple).
+	- If the size isn't known, create a local char* and output its strlen to find out.
+
+- Always use sizeof(datatype) for writing, it helps prevent odd bugs.
+
+Example:
+	char msgType = PROT_MSG;
+	int param = width;
+	int param2 = height;
+
+	if (write(sockfd, &msgType, sizeof(char)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing to Server Socket has failed.\n");
+		return -1;
+	}
+
+	/* Do the next writes in same fashion as above */
+	if (write(...
+	
