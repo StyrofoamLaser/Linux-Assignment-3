@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 	syslog(LOG_INFO, "Attempting to Connect to the Server's Socket.\n");
 
 	/* Connect to the server side socket */
-	if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+	if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		fprintf(stderr, "\nError: Connection Failed.\n");
 		syslog(LOG_ERR, "[Error]: Connection to Server Socket failed!\n");
@@ -114,30 +114,55 @@ void printUsage(char* argv)
 
 int sendRequest(int sockfd, int width, int height)
 {
-	mapmsg_t mapRequest;
-	mapRequest.msgType = PROT_MSG;
-	mapRequest.map = NULL;
-
+	char msgType = PROT_MSG;
+	int param = 0;
+	int param2 = 0;
+	
 	/* Create the message based on the user's input. If the user
 	 * specified a width and height, we will send a request for
 	 * a map of that size. Otherwise we will send a generic request. */
-	if (width == -1 && height == -1)
+	if (width != -1 && height != -1)
 	{
-		mapRequest.param = 0;
+		param = width;
+		param2 = height;
 	}
-	else
+
+	syslog(LOG_INFO, "Attempting to write Message Type to Server Socket.\n");
+
+	if (write(sockfd, &msgType, sizeof(char)) < 0)
 	{
-		mapRequest.param = width;
-		mapRequest.param2 = height;
-	}
-	
-	/* Send a message to the server */
-	if (write(sockfd, &mapRequest, sizeof(mapRequest)) < 0)
-	{
-		fprintf(stderr, "\nError: Writing to Server Socket failed.\n");
-		syslog(LOG_ERR, "[Error]: Writing to Server Socket has failed.\n");
+		fprintf(stderr, "\nError: Writing Message Type to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing Message Type to Server Socket has failed.\n");
 		return -1;
 	}
+
+	syslog(LOG_INFO, "Write was successful.\n");
+	syslog(LOG_INFO, "Attempting to write Param 1 to Server Socket.\n");
+
+	if (write(sockfd, &param, sizeof(int)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing Param 1 to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing Param 1 to Server Socket has failed.\n");
+		return -1;
+	}
+
+	syslog(LOG_INFO, "Write was successful.\n");
+
+	/* If the first param was never set, the second param was never set and 
+	 * we don't need to continue. Otherwise, write the second parameter */
+	if (param == 0)
+		return 0;
+
+	syslog(LOG_INFO, "Attempting to write Param 2 to Server Socket.\n");
+
+	if (write(sockfd, &param2, sizeof(int)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing Param 2 to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing Param 2 to Server Socket has failed.\n");
+		return -1;
+	}
+
+	syslog(LOG_INFO, "Write was successful.\n");
 
 	return 0;
 }
@@ -163,8 +188,7 @@ int readResponse(int sockfd)
 		syslog(LOG_INFO, "Attempting to Read Map Size.\n");	
 
 		int width = 0,
-		    height = 0;
-		char* map;	
+		    height = 0;	
 		
 		/* Read the Width */
 		if (read(sockfd, &width, sizeof(int)) < 0)
@@ -186,9 +210,11 @@ int readResponse(int sockfd)
 		syslog(LOG_INFO, "Attempting to read the Map.\n");
 
 		int mapSize =  width * height + height + 1;
+		char map[mapSize];
+		memset(map, '0', sizeof(map));
 		
 		/* Reads for exactly the map size into our map. */
-		if(read(sockfd, &map, mapSize) < 0)
+		if(read(sockfd, &map, sizeof(map)) < 0)
 		{
 			fprintf(stderr, "\nError: Reading Map failed.\n");
 			syslog(LOG_ERR, "[Error]: Reading Map has failed.\n");
