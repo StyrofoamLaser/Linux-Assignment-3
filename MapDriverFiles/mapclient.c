@@ -193,16 +193,16 @@ int readResponse(int sockfd)
 		/* Read the Width */
 		if (read(sockfd, &width, sizeof(int)) < 0)
 		{
-			fprintf(stderr, "\nError: Read Map Size failed.\n");
-			syslog(LOG_ERR, "[Error]: Read Map Size has failed.\n");
+			fprintf(stderr, "\nError: Read Map Width failed.\n");
+			syslog(LOG_ERR, "[Error]: Read Map Width has failed.\n");
 			return -1;
 		}
 
 		/* Read the Height */
 		if (read(sockfd, &height, sizeof(int)) < 0)
 		{
-			fprintf(stderr, "\nError: Read Map Size failed.\n");
-			syslog(LOG_ERR, "[Error]: Read Map Size has failed.\n");
+			fprintf(stderr, "\nError: Read Map Height failed.\n");
+			syslog(LOG_ERR, "[Error]: Read Map Height has failed.\n");
 			return -1;
 		}
 
