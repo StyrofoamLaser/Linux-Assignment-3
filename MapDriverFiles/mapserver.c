@@ -42,8 +42,6 @@ int main(int argc, char *argv[])
 		
 		int pid = fork();
 
-		mapmsg_t msg;
-
 		if (pid == 0)
 		{
  			/* child stuff */
@@ -95,7 +93,7 @@ int main(int argc, char *argv[])
 			msgValidity = interpretMsg(receivedMsg);
 
 			write(pipeFD[1], &msgValidity, sizeof(int));
-			write(pipeFD[1], &msg, sizeof(mapmsg_t));
+			write(pipeFD[1], &receivedMsg, sizeof(mapmsg_t));
 			close(pipeFD[1]);
 
 			exit(0);
