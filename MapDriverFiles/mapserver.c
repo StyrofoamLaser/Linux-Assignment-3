@@ -228,7 +228,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 	}
 	else if (msgValidity == 1) /* Send a custom map message */
 	{
-		char generatedMap[srcMsg.param * srcMsg.param2];
+		char generatedMap[srcMsg.param * srcMsg.param2 + srcMsg.param2 + 1];
 
 		char* filename = "./map_";
 
@@ -242,17 +242,9 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			iToString(srcMsg.param2, heightString);
 
 			syslog(LOG_INFO, "Generating custom map, about to exec genmap.\n");
-			char tmp1[40];
-			char tmp2[40];
 
-			strcpy(tmp1, widthString);
-			strcpy(tmp2, heightString);
-
-			strcat(tmp1, "\n");
-			strcat(tmp2, "\n");
-
-			syslog(LOG_INFO, tmp1);
-			syslog(LOG_INFO, tmp2);
+			syslog(LOG_INFO, "%s\n", widthString);
+			syslog(LOG_INFO, "%s\n", heightString);
 
 			/*strcat(filename, pidString);*/
 			int execStatus;
@@ -279,7 +271,7 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			if((fd = open(filename, O_RDWR)) >= 0)
 			{
 				int n;
-				n = read(fd, generatedMap, 1024);
+				n = read(fd, generatedMap, sizeof(generatedMap));
 
 				if (n < 0)
 				{
