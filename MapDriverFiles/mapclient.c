@@ -90,6 +90,10 @@ int main(int argc, char* argv[])
 	syslog(LOG_INFO, "Request successfully sent to Server.\n");
 	syslog(LOG_INFO, "Attempting to read response from Server.\n");
 
+	syslog(LOG_INFO, "Sleeping to wait for server response.\n");
+	/* Sleep to allow the server time to write the map info. */
+	sleep(3);
+
 	/* Read the response from the server */
 	if (readResponse(sockfd) < 0)
 	{
