@@ -288,12 +288,11 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 					/* print an error */
 					fprintf(stderr, "ERROR: Error reading from generated map file\n");
 					syslog(LOG_INFO, "Error reading generated map file\n");
-
-					char* errMsg = "ERROR: Error reading from generated map file.\n";					
+					
 					char msgType = PROT_ERR;
-					int errLen = strlen(errMsg);
+					int errLen = 46;
 					char msg[errLen];
-					memcpy(msg, &errMsg, sizeof(msg));	
+					memcpy(msg, "ERROR: Error reading from generated map file.\n", sizeof(msg));	
 	
 					if (write(connfd, &msgType, sizeof(char)) < 0)
 					{
@@ -367,13 +366,11 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 			{
 				syslog(LOG_INFO, "Error opening genmap.sh file!\n");
 				fprintf(stderr, "ERROR: Error opening file for input!\n");
-
-				char* errMsg = "ERROR: Error opening generated map file.\n";
 				
 				char msgType = PROT_ERR;
-				int errLen = strlen(errMsg);
+				int errLen = 51;
 				char msg[errLen];
-				memcpy(msg, errMsg, sizeof(msg));	
+				memcpy(msg, "ERROR: Error opening generated map file.\n", sizeof(msg));	
 
 				if (write(connfd, &msgType, sizeof(char)) < 0)
 				{
@@ -406,14 +403,26 @@ void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd)
 	}
 	else /* Send an Error Message */
 	{
-		char* errMsg = "ERROR: Unrecognized msg protocol.";
-		
-		errmsg_t error;
-		error.msgType = PROT_ERR;
-		error.errLen = strlen(errMsg);
-		error.errMsg = errMsg;
+		char type = PROT_ERR;
+		int errLen = 33;
+		char msg[errLen];
+		memcpy(msg, "ERROR: Unrecognized msg protocol.", sizeof(msg));
 
-		write(connfd, &error, sizeof(errmsg_t));
+		if (write(connfd, &type, sizeof(char)) < 0)
+		{
+		}
+		else syslog(LOG_INFO, "Wrote error type to socket - unregistered protocol.\n");
+
+		if (write(connfd, &errLen, sizeof(int)) < 0)
+		{
+		}
+		else syslog(LOG_INFO, "Wrote error length to socket - unregistered protocol.\n");
+
+		if (write(connfd, &msg, sizeof(msg)) < 0)
+		{
+		}
+		else syslog(LOG_INFO, "Wrote error msg to socket - unregistered protocol.\n");		
+
 		syslog(LOG_INFO, "Sending an error msg to socket. Unregistered protocol.\n");
 	}
 }
