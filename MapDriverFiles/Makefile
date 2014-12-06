@@ -33,15 +33,23 @@ SERVER_SRC=mapserver.c
 SERVER_H=mapserver.h
 SERVER_EXE=mapserver.exe
 
+SERVERG_SRC=mapserverg.c
+SERVERG_OBJ=mapserverg.o
+SERVERG_EXE=mapserverg.exe
+
 CLIENT_OBJ=mapclient.o
 CLIENT_SRC=mapclient.c
 CLIENT_H=mapclient.h
 CLIENT_EXE=mapclient.exe
 
+CLIENTG_SRC=mapclientg.c
+CLIENTG_OBJ=mapclientg.o
+CLIENTG_EXE=mapclientg.exe
+
 DEPENDENCY=socket_common.c
 DEPEND_OBJ=$(DEPENDENCY:.c=.o)
 
-SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC)
+SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) $(SERVERG_SRC) $(CLIENTG_SRC)
 
 H=$(SERVER_H) $(CLIENT_H) common.h socket_common.h
 
@@ -49,6 +57,7 @@ OBJ=$(SRC:.c=.o)  $(DRIVER)
 
 EXE=$(SRC:.c=.exe)
 
+PID=$(shell pgrep -f teampid)
 
 DIR=~/dev/asciimap
 
@@ -70,13 +79,19 @@ all: depend compile
 .o.exe:
 	$(CC) $< -o $@
 
-depend: $(SERVER_EXE) $(CLIENT_EXE)
+depend: $(SERVER_EXE) $(CLIENT_EXE) $(SERVERG_EXE) $(CLIENTG_EXE)
 
 $(SERVER_EXE): $(DEPEND_OBJ) $(SERVER_OBJ)
 	$(CC) $(SERVER_OBJ) $(DEPEND_OBJ) -o $(SERVER_EXE)
 
 $(CLIENT_EXE): $(DEPEND_OBJ) $(CLIENT_OBJ)
 	$(CC) $(CLIENT_OBJ) $(DEPEND_OBJ) -o $(CLIENT_EXE)
+
+$(SERVERG_EXE): $(DEPEND_OBJ) $(SERVERG_OBJ)
+	$(CC) $(SERVERG_OBJ) $(DEPEND_OBJ) -o $(SERVERG_EXE)
+
+$(CLIENTG_EXE): $(DEPEND_OBJ) $(CLIENTG_OBJ)
+	$(CC) $(CLIENTG_OBJ) $(DEPEND_OBJ) -o $(CLIENTG_EXE)
 
 compile: $(EXE) $(H)
 
@@ -123,5 +138,8 @@ socket-test: $(SERVER_EXE) $(CLIENT_EXE)
 	./$(CLIENT_EXE)
 
 kill-server:
-	pkill -f ./$(SERVER_EXE)
-	
+	-pkill -f ./$(SERVER_EXE)
+	-pkill -f ./$(SERVERG_EXE)
+
+kill-children:
+	$(foreach var, $(PID), kill -USR1 $(var);sleep 1;)
