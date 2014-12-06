@@ -1,4 +1,4 @@
-#include "mapserverg.h"
+#include "mapserver.h"
 #include "socket_common.h"
 
 #define P_PREFIX "SERVER -"
