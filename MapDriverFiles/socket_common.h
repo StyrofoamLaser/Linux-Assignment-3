@@ -28,6 +28,20 @@ typedef struct _mapmsg_t
 	char* map;
 } mapmsg_t;
 
+typedef struct _killmsg_t
+{
+	char msgType;
+	int xPos;
+	int yPos;
+	char initial;
+} killmsg_t;
+
+typedef struct _gameovermsg_t
+{
+	char firstChar;
+	char secChar;
+} gameovermsg_t;
+
 typedef struct _errmsg_t
 {
 	char msgType;
@@ -36,6 +50,8 @@ typedef struct _errmsg_t
 } errmsg_t;
 
 int sizeofM(mapmsg_t msg);
+int sizeofK(killmsg_t msg);
+int sizeofG(gameovermsg_t);
 int sizeofE(errmsg_t msg);
 
 #endif
