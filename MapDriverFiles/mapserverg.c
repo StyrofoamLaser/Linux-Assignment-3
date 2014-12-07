@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
 			close(pipeFD[0]); /* our child is only writing to the pipe, close read */
 			
 			char type;
-			mapmsg_t receivedMsg;
 			void* msg;
 			syslog(LOG_INFO, "About to check the socket for a message, and evaluate it's validity.\n");
 
@@ -72,8 +71,7 @@ int main(int argc, char *argv[])
 			msgValidity = interpretMsg(type, msg);
 
 			write(pipeFD[1], &msgValidity, sizeof(int));
-			write(pipeFD[1], &type, sizeof(char));
-			write(pipeFD[1], &receivedMsg, sizeof(mapmsg_t));
+			writeMsg(pipeFD[1], type, msg);	
 			close(pipeFD[1]);
 
 			exit(0);
@@ -400,7 +398,7 @@ void sendMsg(int msgValidity, char type, void* msg, char* sendBuff, int connfd)
 	}
 	else if(type == 'G')
 	{
-		
+		ioctl(connfd, IOCTL_RESET);		
 	}
 	else /* Send an Error Message */
 	{
@@ -438,7 +436,6 @@ void* readMsg(char type, int connfd)
 		mapmsg_t* msg;
 		int width;
 		int height;
-		char* map;
 		if((n = read(connfd, &width, sizeof(int))) < 0)
 		{
 			/* print error */
@@ -469,9 +466,23 @@ void* readMsg(char type, int connfd)
 	return msgInfo;
 }
 
-void writeMsg(char type, void* msg, int connfd)
+void writeMsg(int pipeFD[], char type, void* msg)
 {
-	
+	switch(type)
+	{
+		case 'M':
+		write(pipeFD[1], &type, sizeof(char));
+		write(pipeFD[1], msg, sizeof(mapmsg_t));	
+		break;
+		case 'K':
+		write(pipeFD[1], &type, sizeof(char));
+		write(pipeFD[1], msg, sizeof(killmsg_t));
+		break;
+		case 'G':
+		write(pipeFD[1], &type, sizeof(char));
+		write(pipeFD[1], msg, sizeof(gameovermsg_t));
+		break;
+	}
 }
 
 int interpretMsg(char type, void* msg)
