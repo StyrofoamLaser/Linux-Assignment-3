@@ -204,7 +204,7 @@ void emptyNonFilterchar(char serverMap[], char filterSet[], int filterSize)
         }
 }
 
-void parseMap(char serverMap[], char* argv[], int mapWidth)
+void parseMap(char serverMap[], char* argv[], int mapWidth, int sockfd)
 {
 	atexit(exit_handler);
         if(signal(SIGINT, sig_end) == SIG_ERR)
@@ -259,17 +259,20 @@ void parseMap(char serverMap[], char* argv[], int mapWidth)
 
                                 if(iChildPID == 0)
                                 {
+					int xint = getXfromIndex(j, mapWidth);
+					int yint = getYfromIndex(j, mapWidth);
+
                                         strcpy(argv[0], "teampid ");
                                         strncat(argv[0], &filterSet[i], 1);
                                         strncat(argv[0], " ", 1);
                                         char x[11];
                                         char y[11];
-                                        snprintf(x, 11, "%d", getXfromIndex(j, mapWidth));
+                                        snprintf(x, 11, "%d",xint);
                                         strncat(argv[0], x, 11);
 
                                         strncat(argv[0], " ", 1);
 
-                                        snprintf(y, 11, "%d", getYfromIndex(j, mapWidth));
+                                        snprintf(y, 11, "%d", yint);
                                         strncat(argv[0], y, 11);
 
                                         printf(argv[0]);
@@ -284,7 +287,13 @@ void parseMap(char serverMap[], char* argv[], int mapWidth)
 
                                         /*Send server message*/
 					
-					syslog(LOG_INFO, "Sent K signal. not yet actually implemented\n");
+					if(sendChildMessage(sockfd, filterSet[i], xint, yint) < 0)
+					{
+						fprintf(stderr, "\nError: Child message failed.\n");
+						syslog(LOG_ERR, "[Error]: Child message failed.\n");
+					}
+					
+					syslog(LOG_INFO, "Sent K signal.\n");
                                         /*Exit*/
 					syslog(LOG_INFO, "Child exiting.\n");
                                         exit(filterSet[i]);
@@ -557,7 +566,7 @@ int readResponse(int sockfd, char* argv[])
 
 		printf(map);
 		
-		parseMap(map, argv, width + 1);
+		parseMap(map, argv, width + 1, sockfd);
 	}
 	/* If it is an error, grab the size of the message next */
 	else if (msgType == PROT_ERR)

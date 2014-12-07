@@ -34,6 +34,7 @@ SERVER_H=mapserver.h
 SERVER_EXE=mapserver.exe
 
 SERVERG_SRC=mapserverg.c
+SERVERG_H=mapserverg.h
 SERVERG_OBJ=mapserverg.o
 SERVERG_EXE=mapserverg.exe
 
@@ -43,6 +44,7 @@ CLIENT_H=mapclient.h
 CLIENT_EXE=mapclient.exe
 
 CLIENTG_SRC=mapclientg.c
+CLIENTG_H=mapclientg.h
 CLIENTG_OBJ=mapclientg.o
 CLIENTG_EXE=mapclientg.exe
 
@@ -51,7 +53,7 @@ DEPEND_OBJ=$(DEPENDENCY:.c=.o)
 
 SRC=$(FORKTEST_SRC) $(TEST_SRC) $(SERVER_SRC) $(CLIENT_SRC) $(SERVERG_SRC) $(CLIENTG_SRC)
 
-H=$(SERVER_H) $(CLIENT_H) common.h socket_common.h
+H=$(SERVER_H) $(CLIENT_H) $(SERVERG_H) $(CLIENTG_H) common.h socket_common.h
 
 OBJ=$(SRC:.c=.o)  $(DRIVER)
 
