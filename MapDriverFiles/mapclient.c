@@ -93,6 +93,7 @@ int main(int argc, char* argv[])
 	syslog(LOG_INFO, "Sleeping to wait for server response.\n");
 	/* Sleep to allow the server time to write the map info. */
 	sleep(3);
+	syslog(LOG_INFO, "Waking up from sleep.\n");
 
 	/* Read the response from the server */
 	if (readResponse(sockfd) < 0)

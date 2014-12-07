@@ -1,5 +1,6 @@
 #include "mapserver.h"
 #include "socket_common.h"
+#include <fcntl.h>
 
 #define P_PREFIX "SERVER -"
 #define C_PREFIX "SERVER_CHILD -"
@@ -144,7 +145,29 @@ int main(int argc, char *argv[])
 
 		syslog(LOG_INFO, "Sending msg to socket based on msg validity\n");
 
-		sendMsg(validity, theMsg, sendBuff, connfd);
+		struct flock fl;
+		fl.l_type = F_RDLCK;
+		fl.l_whence = SEEK_SET;
+		fl.l_start = 0;
+		fl.l_len = 0;
+
+		if (fcntl(connfd, F_SETLK, &fl) != -1)
+		{
+			sendMsg(validity, theMsg, sendBuff, connfd);
+		
+			fl.l_type = F_UNLCK;
+			fl.l_whence = SEEK_SET;
+			fl.l_start = 0;
+			fl.l_len = 0;
+		
+			if (fcntl(connfd, F_SETLK, &fl) == -1)
+				syslog(LOG_INFO, "ERROR: Error unlocking file descriptor!\n");
+		}
+		else
+		{
+			/*error*/
+			syslog(LOG_INFO, "ERROR: Error locking file descriptor!\n");
+		}
 
 		syslog(LOG_INFO, "Msg written to socket. Closing connection to client.\n");
 		
