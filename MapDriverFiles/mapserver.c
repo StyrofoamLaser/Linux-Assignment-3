@@ -140,39 +140,15 @@ int main(int argc, char *argv[])
 		read(pipeFD[0], &theMsg, sizeof(mapmsg_t));
 
 		close(pipeFD[0]);
-		
-		/*logz(P_PREFIX, str);*/
 
 		syslog(LOG_INFO, "Sending msg to socket based on msg validity\n");
 
-		struct flock fl;
-		fl.l_type = F_RDLCK;
-		fl.l_whence = SEEK_SET;
-		fl.l_start = 0;
-		fl.l_len = 0;
-
-		if (fcntl(connfd, F_SETLK, &fl) != -1)
-		{
-			sendMsg(validity, theMsg, sendBuff, connfd);
-		
-			fl.l_type = F_UNLCK;
-			fl.l_whence = SEEK_SET;
-			fl.l_start = 0;
-			fl.l_len = 0;
-		
-			if (fcntl(connfd, F_SETLK, &fl) == -1)
-				syslog(LOG_INFO, "ERROR: Error unlocking file descriptor!\n");
-		}
-		else
-		{
-			/*error*/
-			syslog(LOG_INFO, "ERROR: Error locking file descriptor!\n");
-		}
+		sendMsg(validity, theMsg, sendBuff, connfd);
 
 		syslog(LOG_INFO, "Msg written to socket. Closing connection to client.\n");
 		
-		close(connfd);
 		sleep(1);
+		close(connfd);
 	}
 	closelog();
 }
