@@ -10,6 +10,86 @@ pid_t* piChildrenPIDs = NULL;
 
 /*Part 5 functions*/
 
+int sendGoMessage(int sockfd)
+{
+	char msgType = PROT_GO;
+	char letter = '0';
+	
+	syslog(LOG_INFO, "Attempting to write Message Type to Server Socket.\n");
+
+        if (write(sockfd, &msgType, sizeof(char)) < 0)
+        {
+                fprintf(stderr, "\nError: Writing Message Type to Server Socket failed.\n");
+                syslog(LOG_ERR, "[Error]: Writing Message Type to Server Socket has failed.\n");
+                return -1;
+        }
+
+        syslog(LOG_INFO, "Write was successful.\n");
+
+	syslog(LOG_INFO, "Attempting to write one letter to Server Socket.\n");
+
+        if (write(sockfd, &letter, sizeof(char)) < 0)
+        {
+                fprintf(stderr, "\nError: Writing letter to Server Socket failed.\n");
+                syslog(LOG_ERR, "[Error]: Writing letter to Server Socket has failed.\n");
+                return -1;
+        }
+
+        syslog(LOG_INFO, "Write was successful.\n");
+
+	return 0;
+}
+
+int sendChildMessage(int sockfd, char initial, int x, int y)
+{	
+	char msgType = PROT_KIL;
+
+	syslog(LOG_INFO, "Attempting to write Message Type to Server Socket.\n");
+
+	if (write(sockfd, &msgType, sizeof(char)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing Message Type to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing Message Type to Server Socket has failed.\n");
+		return -1;
+	}
+
+	syslog(LOG_INFO, "Write was successful.\n");
+	syslog(LOG_INFO, "Attempting to write initial to Server Socket.\n");
+
+	if (write(sockfd, &initial, sizeof(char)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing initial to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing initial to Server Socket has failed.\n");
+		return -1;
+	}
+
+	syslog(LOG_INFO, "Write was successful.\n");
+
+	syslog(LOG_INFO, "Attempting to write x to Server Socket.\n");
+
+	if (write(sockfd, &x, sizeof(int)) < 0)
+	{
+		fprintf(stderr, "\nError: Writing x to Server Socket failed.\n");
+		syslog(LOG_ERR, "[Error]: Writing x to Server Socket has failed.\n");
+		return -1;
+	}
+
+	syslog(LOG_INFO, "Write was successful.\n");
+
+	syslog(LOG_INFO, "Attempting to write y to Server Socket.\n");
+
+        if (write(sockfd, &y, sizeof(int)) < 0)
+        {
+                fprintf(stderr, "\nError: Writing y to Server Socket failed.\n");
+                syslog(LOG_ERR, "[Error]: Writing y to Server Socket has failed.\n");
+                return -1;
+        }
+
+	syslog(LOG_INFO, "Write was successful.\n");
+
+	return 0;
+}
+
 int getXfromIndex(int index, int width)
 {
         return index % width;
@@ -524,5 +604,3 @@ int readResponse(int sockfd, char* argv[])
 
 	return 0;
 }
-
-

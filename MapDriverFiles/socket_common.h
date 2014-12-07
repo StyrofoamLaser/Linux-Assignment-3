@@ -19,6 +19,7 @@
 
 #define PROT_MSG 'M'
 #define PROT_ERR 'E'
+#define PROT_KIL 'K'
 
 typedef struct _mapmsg_t
 {
