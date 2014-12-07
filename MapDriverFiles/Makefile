@@ -145,3 +145,6 @@ kill-server:
 
 kill-children:
 	$(foreach var, $(PID), kill -USR1 $(var);sleep 1;)
+
+log:
+	tail -f /var/log/messages | egrep "SERVER|CLIENT"
