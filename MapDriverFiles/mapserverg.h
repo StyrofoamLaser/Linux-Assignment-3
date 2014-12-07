@@ -6,8 +6,10 @@
 #define LOG_PRFX "SERVER -"
 #define LOG_PRFX_C "SERVER CHILD -"
 
-void sendMsg(int msgValidity, mapmsg_t srcMsg, char* sendBuff, int connfd);
-int interpretMsg(mapmsg_t msg);
+void sendMsg(int msgValidity, char type, void* msg, char* sendBuff, int connfd);
+void* readMsg(char type, int connfd);
+void writeMsg(char type, void* msg, int connfd);
+int interpretMsg(char type, void*  msg);
 void iToString(int i, char* str);
 
 #endif
