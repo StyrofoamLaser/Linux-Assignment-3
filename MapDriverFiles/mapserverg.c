@@ -104,9 +104,10 @@ int main(int argc, char *argv[])
 
 		syslog(LOG_INFO, "Msg written to socket. Closing connection to client.\n");
 		
-		close(connfd);
 		sleep(1);
+		close(connfd);
 	}
+
 	closelog();
 }
 
