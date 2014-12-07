@@ -90,11 +90,6 @@ int main(int argc, char* argv[])
 	syslog(LOG_INFO, "Request successfully sent to Server.\n");
 	syslog(LOG_INFO, "Attempting to read response from Server.\n");
 
-	syslog(LOG_INFO, "Sleeping to wait for server response.\n");
-	/* Sleep to allow the server time to write the map info. */
-	sleep(3);
-	syslog(LOG_INFO, "Waking up from sleep.\n");
-
 	/* Read the response from the server */
 	if (readResponse(sockfd) < 0)
 	{
@@ -194,12 +189,16 @@ int readResponse(int sockfd)
 
 		int width = 0,
 		    height = 0;	
-		
+	
 		/* Read the Width */
 		if (read(sockfd, &width, sizeof(int)) < 0)
 		{
+			/*if (errno == EAGAIN)*/
+			fprintf(stderr, "Error: Errno is %i\n", errno);
+
 			fprintf(stderr, "\nError: Read Map Width failed.\n");
 			syslog(LOG_ERR, "[Error]: Read Map Width has failed.\n");
+
 			return -1;
 		}
 
