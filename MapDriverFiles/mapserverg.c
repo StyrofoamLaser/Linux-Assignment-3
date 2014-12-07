@@ -448,7 +448,7 @@ void* readMsg(char type, int connfd)
 
 		if (width != 0)
 		{
-			if((n = read(connfd, &height, sizeof(char))) < 0)
+			if((n = read(connfd, &height, sizeof(int))) < 0)
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading height from socket.\n");
@@ -462,6 +462,77 @@ void* readMsg(char type, int connfd)
 		msg->msgType = type;
 		msg->param = width;
 		msgInfo = msg;
+	}
+	else if(type == 'K')
+	{
+		killmsg_t* msg;
+		int xPos;
+		int yPos;
+		char initial;
+
+		if((n = read(connfd, &xPos, sizeof(int))) < 0)
+		{
+			/* print error */
+			fprintf(stderr, "ERROR: Error reading xPos from socket.\n");
+			syslog(LOF_INFO, "Error reading xPos from socket.\n");
+			exit(1);
+		}
+		else syslog(LOG_INFO, "Read client msg xPos from socket.\n");
+
+		if(xPos != 0)
+		{
+			if((n = read(connfd, &yPos, sizeof(int))) < 0)
+			{
+				/* print error */
+				fprintf(stderr, "ERROR: Error reading yPos from socket.\n");
+				syslog(LOG_INFO, "Error reading yPos from socket.\n");
+				exit(1);	
+			}
+			else syslog(LOG_INFO, "Read client msg yPos from socket.\n");
+		}
+
+		if(yPos != 0)
+		{
+			if((n = read(connfd, &yPos, sizeof(char))) < 0)
+			{
+				/* print error */
+				fprintf(stderr, "ERROR: Error reading initial from socket.\n");
+				syslog(LOG_INFO, "Error reading initial from socket.\n");
+				exit(1);	
+			}
+			else syslog(LOG_INFO, "Read client msg initial from socket.\n");
+		}
+
+		msg->msgType = type;
+		msg->xPos = xPos;
+		msg->yPos = yPos;
+		msg->initial = initial;
+		msgInfo = msg;
+	
+	}
+	else if(type == 'G')
+	{
+		gameovermsg_t* msg;
+		char secChar;
+		if((n = read(connfd, &secChar, sizeof(char))) < 0)
+		{
+			/* print error */
+			fprintf(stderr, "ERROR: Error reading secChar from socket.\n");
+			syslog(LOG_INFO, "Error reading secChar from socket.\n");
+			exit(1);	
+		}
+		else syslog(LOG_INFO, "Read client msg secChar from socket.\n");
+		
+		msg->msgType = type;
+		msg->secChar = secChar;
+		msgInfo = msg;
+	}
+	else
+	{
+		/* print error */
+		fprintf(stderr, "ERROR: Error unknown type  from socket.\n");
+		syslog(LOG_INFO, "Error reading unknown type from socket.\n");
+		exit(1);
 	}
 
 	return msgInfo;

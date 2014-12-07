@@ -40,7 +40,7 @@ typedef struct _killmsg_t
 
 typedef struct _gameovermsg_t
 {
-	char firstChar;
+	char msgType;
 	char secChar;
 } gameovermsg_t;
 
