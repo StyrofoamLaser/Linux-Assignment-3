@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 		syslog(LOG_INFO, "Sending msg to socket based on msg validity\n");
 
 		sendMsg(validity, msgType, theMsg, sendBuff, connfd);
-
+		printMap();
 		syslog(LOG_INFO, "Msg written to socket. Closing connection to client.\n");
 		
 		sleep(1);
@@ -528,4 +528,39 @@ int interpretMsg(char type, void* msg)
 void iToString(int i, char* str)
 {
 	sprintf(str, "%d", i);
+}
+
+void printMap()
+{
+	char read_buf[1025];
+	int fd, n, i;
+	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
+	{
+		printf("\n-----\n");
+		lseek(fd, 0, SEEK_SET);
+
+		do
+		{
+			/*Read in from the driver to the buffer*/
+			n = read(fd, read_buf, 1025);
+
+			/*Print what was written if anything was written*/
+			printf(read_buf);
+
+			for(i = 0; i < n; i++)
+			{
+				read_buf[i] = '\0';
+			}
+
+		}
+		while (n > 0);
+		printf("\n-----\n");
+		close(fd);
+	}
+	else
+	{
+		perror("open(/dev/asciimap) failed");
+		syslog(LOG_INFO, "Error opening device map.");
+		exit(1);
+	}
 }
