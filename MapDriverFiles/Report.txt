@@ -4,14 +4,18 @@ Cody Carlson, Vincent Loignon, James Potvin, Robert Hacker
 INSTALLATION/COMPILATION:
 
 1. Run 'make'
-2. Run 'make build'
-
+2a. Run 'make build' <-- If device has not been added to /dev
+2b. Run make register <-- If device has already been added to /dev
 RUNNING:
 
 1. Run 'make fork-test' 
 2. Run 'make test'
 3. Run 'make socket-test'
 
+Running for part 3:
+1. Run ./mapserverg.exe
+2. Run ./mapclientg.exe
+3. Run make kill-children
 
 CURRENTLY KNOWN BUGS:
 
@@ -27,5 +31,7 @@ CONTRIBUTIONS:
 
 Cody: Makefile, Shell Script, and Report, Server
 Vincent: Driver ioctl(), Driver lseek(), modifications to Makefile, Client/Server
-Robert: Driver variables and setup, driver read(), driver write(), modifications to Makefile
+Robert: Driver variables and setup, driver read(), driver write(), modifications to Makefile,
+server handling of kill and gameover signals, testing game, server displaying
+device map
 James: Test program, interpreting text files in the test program, ASCII Art Names
