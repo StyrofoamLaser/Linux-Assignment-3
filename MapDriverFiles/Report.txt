@@ -18,20 +18,14 @@ Running for part 3:
 3. Run make kill-children
 
 CURRENTLY KNOWN BUGS:
-
-- Driver can't be compiled properly (Most likely a Makefile problem)
-- Makefile is incomplete (Can't compile the socket from the makefile)
-- Server is unable to open the map file created by genmap.sh
-- Currently does not comply with the project specifications
 - Error messages occaisonally have 0s in them that were not placed there (Particularly at the end)
-- Log file is deleted and remade each server session
-- Client and Server both log to the same file
+- mapclientg children begin to write message but never finish for some reason.
+  We think it might be due to reentrant stuff.
 
 CONTRIBUTIONS:
 
 Cody: Makefile, Shell Script, and Report, Server
 Vincent: Driver ioctl(), Driver lseek(), modifications to Makefile, Client/Server
 Robert: Driver variables and setup, driver read(), driver write(), modifications to Makefile,
-server handling of kill and gameover signals, testing game, server displaying
-device map
-James: Test program, interpreting text files in the test program, ASCII Art Names
+server handling of kill and gameover signals, testing game, server displaying device map
+James: Test program, interpreting text files in the test program, ASCII Art Names, Extra makefile stuff, mapclientg
