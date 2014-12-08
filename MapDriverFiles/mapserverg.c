@@ -425,6 +425,7 @@ void sendMsg(int msgValidity, char type, void* msg, char* sendBuff, int connfd)
 
 		syslog(LOG_INFO, "Sending an error msg to socket. Unregistered protocol.\n");
 	}
+	free(msg);
 }
 
 void* readMsg(char type, int connfd)
@@ -434,7 +435,7 @@ void* readMsg(char type, int connfd)
 
 	if(type == 'M')
 	{
-		mapmsg_t* msg;
+		mapmsg_t* msg = (mapmsg_t*)malloc(sizeof(mapmsg_t));
 		int width;
 		int height;
 		if((n = read(connfd, &width, sizeof(int))) < 0)
@@ -465,7 +466,7 @@ void* readMsg(char type, int connfd)
 	}
 	else if(type == 'K')
 	{
-		killmsg_t* msg;
+		killmsg_t* msg = (killmsg_t*)malloc(sizeof(killmsg_t));
 		int xPos;
 		int yPos;
 		char initial;
@@ -493,7 +494,7 @@ void* readMsg(char type, int connfd)
 
 		if(yPos != 0)
 		{
-			if((n = read(connfd, &yPos, sizeof(char))) < 0)
+			if((n = read(connfd, &initial, sizeof(char))) < 0)
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading initial from socket.\n");
@@ -512,7 +513,7 @@ void* readMsg(char type, int connfd)
 	}
 	else if(type == 'G')
 	{
-		gameovermsg_t* msg;
+		gameovermsg_t* msg =  (gameovermsg_t*)malloc(sizeof(gameovermsg_t));
 		char secChar;
 		if((n = read(connfd, &secChar, sizeof(char))) < 0)
 		{
@@ -538,21 +539,21 @@ void* readMsg(char type, int connfd)
 	return msgInfo;
 }
 
-void writeMsg(int pipeFD[], char type, void* msg)
+void writeMsg(int pipeFD, char type, void* msg)
 {
 	switch(type)
 	{
 		case 'M':
-		write(pipeFD[1], &type, sizeof(char));
-		write(pipeFD[1], msg, sizeof(mapmsg_t));	
+		write(pipeFD, &type, sizeof(char));
+		write(pipeFD, msg, sizeof(mapmsg_t));	
 		break;
 		case 'K':
-		write(pipeFD[1], &type, sizeof(char));
-		write(pipeFD[1], msg, sizeof(killmsg_t));
+		write(pipeFD, &type, sizeof(char));
+		write(pipeFD, msg, sizeof(killmsg_t));
 		break;
 		case 'G':
-		write(pipeFD[1], &type, sizeof(char));
-		write(pipeFD[1], msg, sizeof(gameovermsg_t));
+		write(pipeFD, &type, sizeof(char));
+		write(pipeFD, msg, sizeof(gameovermsg_t));
 		break;
 	}
 }

@@ -13,8 +13,9 @@
 
 void sendMsg(int msgValidity, char type, void* msg, char* sendBuff, int connfd);
 void* readMsg(char type, int connfd);
-void writeMsg(int pipeFD[], char type, void* msg);
+void writeMsg(int pipeFD, char type, void* msg);
 int interpretMsg(char type, void*  msg);
 void iToString(int i, char* str);
+void printMap();
 
 #endif
