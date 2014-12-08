@@ -67,13 +67,15 @@ int main(int argc, char *argv[])
 			else syslog(LOG_INFO, "Read client msg type from socket.\n");			
 
 			msg = readMsg(type, connfd);
-
+			syslog(LOG_INFO, "Read msg information from socket.\n");
 			msgValidity = interpretMsg(type, msg);
-
+			syslog(LOG_INFO, "Validated message.\n");
 			write(pipeFD[1], &msgValidity, sizeof(int));
 			writeMsg(pipeFD[1], type, msg);	
+			syslog(LOG_INFO, "Wrote information to pipe.\n");
 			close(pipeFD[1]);
-
+			
+			free(msg);
 			exit(0);
 		}
 
@@ -91,22 +93,42 @@ int main(int argc, char *argv[])
 		/* Read the message type */
 		read(pipeFD[0], &msgType, sizeof(char));
 
-		/* read the message itself */
-		read(pipeFD[0], &theMsg, sizeof(mapmsg_t));
+		/* Read message by type */
+		switch(msgType)
+		{
+
+			case 'M':
+			theMsg = malloc(sizeof(mapmsg_t));
+			read(pipeFD[0], theMsg, sizeof(mapmsg_t));
+			break;
+			case 'K':
+			theMsg = malloc(sizeof(killmsg_t));
+			read(pipeFD[0], theMsg, sizeof(killmsg_t));
+			case 'G':
+			theMsg = malloc(sizeof(gameovermsg_t));
+			read(pipeFD[0], theMsg, sizeof(gameovermsg_t));
+			break;
+		}
 
 		close(pipeFD[0]);
 		
+		syslog(LOG_INFO, "Read message information from child.\n");
 		/*logz(P_PREFIX, str);*/
 
 		syslog(LOG_INFO, "Sending msg to socket based on msg validity\n");
 
 		sendMsg(validity, msgType, theMsg, sendBuff, connfd);
-
-		syslog(LOG_INFO, "Msg written to socket. Closing connection to client.\n");
+		syslog(LOG_INFO, "Msg action has completed.\n");
+		printMap(connfd);
+		syslog(LOG_INFO, "Msg written to socket. Closing connection to client. Map Printed\n");
 		
-		close(connfd);
+		free(theMsg);
+		syslog(LOG_INFO, "Allocated message memory freed.");
+
 		sleep(1);
+		close(connfd);
 	}
+
 	closelog();
 }
 
@@ -433,7 +455,7 @@ void* readMsg(char type, int connfd)
 
 	if(type == 'M')
 	{
-		mapmsg_t* msg;
+		mapmsg_t* msg = (mapmsg_t*)malloc(sizeof(mapmsg_t));
 		int width;
 		int height;
 		if((n = read(connfd, &width, sizeof(int))) < 0)
@@ -447,7 +469,7 @@ void* readMsg(char type, int connfd)
 
 		if (width != 0)
 		{
-			if((n = read(connfd, &height, sizeof(char))) < 0)
+			if((n = read(connfd, &height, sizeof(int))) < 0)
 			{
 				/* print error */
 				fprintf(stderr, "ERROR: Error reading height from socket.\n");
@@ -462,25 +484,96 @@ void* readMsg(char type, int connfd)
 		msg->param = width;
 		msgInfo = msg;
 	}
+	else if(type == 'K')
+	{
+		killmsg_t* msg = (killmsg_t*)malloc(sizeof(killmsg_t));
+		int xPos;
+		int yPos;
+		char initial;
+
+		if((n = read(connfd, &xPos, sizeof(int))) < 0)
+		{
+			/* print error */
+			fprintf(stderr, "ERROR: Error reading xPos from socket.\n");
+			syslog(LOG_INFO, "Error reading xPos from socket.\n");
+			exit(1);
+		}
+		else syslog(LOG_INFO, "Read client msg xPos from socket.\n");
+
+		if(xPos != 0)
+		{
+			if((n = read(connfd, &yPos, sizeof(int))) < 0)
+			{
+				/* print error */
+				fprintf(stderr, "ERROR: Error reading yPos from socket.\n");
+				syslog(LOG_INFO, "Error reading yPos from socket.\n");
+				exit(1);	
+			}
+			else syslog(LOG_INFO, "Read client msg yPos from socket.\n");
+		}
+
+		if(yPos != 0)
+		{
+			if((n = read(connfd, &initial, sizeof(char))) < 0)
+			{
+				/* print error */
+				fprintf(stderr, "ERROR: Error reading initial from socket.\n");
+				syslog(LOG_INFO, "Error reading initial from socket.\n");
+				exit(1);	
+			}
+			else syslog(LOG_INFO, "Read client msg initial from socket.\n");
+		}
+
+		msg->msgType = type;
+		msg->xPos = xPos;
+		msg->yPos = yPos;
+		msg->initial = initial;
+		msgInfo = msg;
+	
+	}
+	else if(type == 'G')
+	{
+		gameovermsg_t* msg =  (gameovermsg_t*)malloc(sizeof(gameovermsg_t));
+		char secChar;
+		if((n = read(connfd, &secChar, sizeof(char))) < 0)
+		{
+			/* print error */
+			fprintf(stderr, "ERROR: Error reading secChar from socket.\n");
+			syslog(LOG_INFO, "Error reading secChar from socket.\n");
+			exit(1);	
+		}
+		else syslog(LOG_INFO, "Read client msg secChar from socket.\n");
+		
+		msg->msgType = type;
+		msg->secChar = secChar;
+		msgInfo = msg;
+	}
+	else
+	{
+		/* print error */
+		fprintf(stderr, "ERROR: Error unknown type  from socket.\n");
+		syslog(LOG_INFO, "Error reading unknown type from socket.\n");
+		exit(1);
+	}
 
 	return msgInfo;
 }
 
-void writeMsg(int pipeFD[], char type, void* msg)
+void writeMsg(int pipeFD, char type, void* msg)
 {
 	switch(type)
 	{
 		case 'M':
-		write(pipeFD[1], &type, sizeof(char));
-		write(pipeFD[1], msg, sizeof(mapmsg_t));	
+		write(pipeFD, &type, sizeof(char));
+		write(pipeFD, msg, sizeof(mapmsg_t));	
 		break;
 		case 'K':
-		write(pipeFD[1], &type, sizeof(char));
-		write(pipeFD[1], msg, sizeof(killmsg_t));
+		write(pipeFD, &type, sizeof(char));
+		write(pipeFD, msg, sizeof(killmsg_t));
 		break;
 		case 'G':
-		write(pipeFD[1], &type, sizeof(char));
-		write(pipeFD[1], msg, sizeof(gameovermsg_t));
+		write(pipeFD, &type, sizeof(char));
+		write(pipeFD, msg, sizeof(gameovermsg_t));
 		break;
 	}
 }
@@ -527,4 +620,50 @@ int interpretMsg(char type, void* msg)
 void iToString(int i, char* str)
 {
 	sprintf(str, "%d", i);
+}
+
+void printMap(int connfd)
+{
+	char read_buf[1025];
+	int fd, n, i;
+	if((fd = open("/dev/asciimap", O_RDWR)) >= 0)
+	{
+		printf("\n-----\n");
+		lseek(fd, 0, SEEK_SET);
+
+		do
+		{
+			/*Read in from the driver to the buffer*/
+			n = read(fd, read_buf, 1025);
+
+			/*Print what was written if anything was written*/
+			printf(read_buf);
+
+			for(i = 0; i < n; i++)
+			{
+				read_buf[i] = '\0';
+			}
+
+		}
+		while (n > 0);
+		printf("\n-----\n");
+		close(fd);
+	}
+	else
+	{
+		syslog(LOG_INFO, "Failed to access /dev/asciimap.\n");
+
+		char msgType = PROT_ERR;
+		char errLen = 44;
+		char errMsg[errLen];
+		memcpy(errMsg, "ERROR: /dev/asciimap could not be accessed.\n", sizeof(errMsg));		
+
+		if (write(connfd, &msgType, sizeof(char)) < 0)
+		{
+			fprintf(stderr, "\nError: Writing error type to Server Socket failed.\n");
+			syslog(LOG_ERR, "[Error]: Writing error type to Server Socket has failed.\n");
+			exit(1);
+		}
+		else syslog(LOG_INFO, "Error opening device map.\n");
+	}
 }
