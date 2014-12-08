@@ -14,14 +14,7 @@ RUNNING:
 
 
 CURRENTLY KNOWN BUGS:
-
-- Driver can't be compiled properly (Most likely a Makefile problem)
-- Makefile is incomplete (Can't compile the socket from the makefile)
-- Server is unable to open the map file created by genmap.sh
-- Currently does not comply with the project specifications
 - Error messages occaisonally have 0s in them that were not placed there (Particularly at the end)
-- Log file is deleted and remade each server session
-- Client and Server both log to the same file
 
 CONTRIBUTIONS:
 
