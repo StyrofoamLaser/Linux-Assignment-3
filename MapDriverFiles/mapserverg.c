@@ -474,7 +474,7 @@ void* readMsg(char type, int connfd)
 		{
 			/* print error */
 			fprintf(stderr, "ERROR: Error reading xPos from socket.\n");
-			syslog(LOF_INFO, "Error reading xPos from socket.\n");
+			syslog(LOG_INFO, "Error reading xPos from socket.\n");
 			exit(1);
 		}
 		else syslog(LOG_INFO, "Read client msg xPos from socket.\n");
