@@ -44,7 +44,7 @@ int sendChildMessage(int sockfd, char initial, int x, int y)
 {	
 	char msgType = PROT_KIL;
 
-	syslog(LOG_INFO, "Attempting to write Message Type to Server Socket.\n");
+	syslog(LOG_INFO, "Attempting to write ChildMessage Type to Server Socket.\n");
 
 	if (write(sockfd, &msgType, sizeof(char)) < 0)
 	{
@@ -210,17 +210,17 @@ void parseMap(char serverMap[], char* argv[], int mapWidth, int sockfd)
         if(signal(SIGINT, sig_end) == SIG_ERR)
         {
                 printf("Can't catch signal\n");
-		syslog(LOG_ERR, "could not set signal handler.\n");
+		syslog(LOG_ERR, "could not set sigint handler.\n");
         }
         if(signal(SIGHUP, sig_end) == SIG_ERR)
         {
                 printf("Can't catch signal\n");
-		syslog(LOG_ERR, "could not set signal handler.\n");
+		syslog(LOG_ERR, "could not set sighup handler.\n");
         }
 	if(signal(SIGKILL, sig_end) == SIG_ERR)
 	{
 		printf("Can't catch signal\n");
-		syslog(LOG_ERR, "could not set signal handler.\n");
+		syslog(LOG_ERR, "could not set sigkill handler.\n");
 	}
 
         /*
@@ -244,80 +244,79 @@ void parseMap(char serverMap[], char* argv[], int mapWidth, int sockfd)
         /*
          * Allocate as much storage as entries there are in the map
          */
-        piChildrenPIDs = malloc(sizeof(serverMap));
+        piChildrenPIDs = malloc(strlen(serverMap));
 
-        emptyNonFilterchar(serverMap, filterSet, filterSize);
-        printMap(serverMap);
-        for(i = 0; i < filterSize; i++)
-        {
-                for(j = 0; j < sizeof(serverMap); j++)
-                {
-                        if(serverMap[j] == filterSet[i])
-                        {
-                                iChildPID = fork();
-				syslog(LOG_INFO, "Forked child with PID %d.\n", iChildPID);
+	emptyNonFilterchar(serverMap, filterSet, filterSize);
 
-                                if(iChildPID == 0)
-                                {
-					int xint = getXfromIndex(j, mapWidth);
-					int yint = getYfromIndex(j, mapWidth);
+	for(j = 0; j < strlen(serverMap); j++)
+	{
+		if(isInFilter(serverMap[j], filterSet, filterSize))
+		{
+			syslog(LOG_INFO, "About to fork\n");
+			iChildPID = fork();
 
-                                        strcpy(argv[0], "teampid ");
-                                        strncat(argv[0], &filterSet[i], 1);
-                                        strncat(argv[0], " ", 1);
-                                        char x[11];
-                                        char y[11];
-                                        snprintf(x, 11, "%d",xint);
-                                        strncat(argv[0], x, 11);
+			if(iChildPID == 0)
+			{
+				syslog(LOG_INFO, "Forked child\n");
 
-                                        strncat(argv[0], " ", 1);
+				int xint = getXfromIndex(j, mapWidth);
+				int yint = getYfromIndex(j, mapWidth);
 
-                                        snprintf(y, 11, "%d", yint);
-                                        strncat(argv[0], y, 11);
+				strcpy(argv[0], "teampid ");
+				strncat(argv[0], &filterSet[i], 1);
+				strncat(argv[0], " ", 1);
+				char x[11];
+				char y[11];
+				snprintf(x, 11, "%d",xint);
+				strncat(argv[0], x, 11);
 
-                                        printf(argv[0]);
-                                        /*Set signal handler*/
-                                        if(signal(SIGUSR1, sig_usr) == SIG_ERR)
-                                        {
-                                                printf("Can't catch signal\n");
-						syslog(LOG_ERR, "could not set signal handler.\n");
-                                        }
+				strncat(argv[0], " ", 1);
 
-                                        pause();
+				snprintf(y, 11, "%d", yint);
+				strncat(argv[0], y, 11);
 
-                                        /*Send server message*/
-					
-					if(sendChildMessage(sockfd, filterSet[i], xint, yint) < 0)
-					{
-						fprintf(stderr, "\nError: Child message failed.\n");
-						syslog(LOG_ERR, "[Error]: Child message failed.\n");
-					}
-					
-					syslog(LOG_INFO, "Sent K signal.\n");
-                                        /*Exit*/
-					syslog(LOG_INFO, "Child exiting.\n");
-                                        exit(filterSet[i]);
-                                }
-                                else if(iChildPID > 0)
-                                {
-                                        /*stuff the parent does*/
-                                        /* store PID of the just forked child */
-                                        piChildrenPIDs[j] = iChildPID;
-                                        numChilds += 1;
-                                }
-                                else
-                                {
-                                        /*Fork failed*/
-					syslog(LOG_ERR, "Fork failed.\n");
-                                        perror("Fork failed");
-                                }
-                        }
-                }
-        }
+				printf(argv[0]);
+				/*Set signal handler*/
+				if(signal(SIGUSR1, sig_usr) == SIG_ERR)
+				{
+					printf("Can't catch signal\n");
+					syslog(LOG_ERR, "could not set signal handler.\n");
+				}
+				pause();
 
+				/*Send server message*/
+
+				if(sendChildMessage(sockfd, filterSet[i], xint, yint) < 0)
+				{
+					fprintf(stderr, "\nError: Child message failed.\n");
+					syslog(LOG_ERR, "[Error]: Child message failed.\n");
+				}
+
+				syslog(LOG_INFO, "Sent K signal.\n");
+				/*Exit*/
+				syslog(LOG_INFO, "Child exiting.\n");
+				exit(filterSet[i]);
+			}
+			else if(iChildPID > 0)
+			{
+				/*stuff the parent does*/
+				/* store PID of the just forked child */
+				piChildrenPIDs[j] = iChildPID;
+				numChilds += 1;
+				syslog(LOG_INFO, "stored pid\n");
+			}
+			else
+			{
+				/*Fork failed*/
+				syslog(LOG_ERR, "Fork failed.\n");
+				perror("Fork failed");
+			}
+		}
+	}
+	syslog(LOG_INFO, "got here\n");
         while(numChilds > 0)
         {
-                for(i = 0; i < sizeof(serverMap); i++)
+                for(i = 0; i < strlen(serverMap); i++)
                 {
                         if(waitpid(piChildrenPIDs[i], NULL, WNOHANG) != 0)
                         {
@@ -328,10 +327,6 @@ void parseMap(char serverMap[], char* argv[], int mapWidth, int sockfd)
                                         printMap(serverMap);
                                         numChilds -= 1;
                                 }
-                        }
-                        else
-                        {
-                                /*printf("%dliv\n", piChildrenPIDs[i]);*/
                         }
                 }
         }
@@ -586,6 +581,8 @@ int readResponse(int sockfd, char* argv[])
 		
 		syslog(LOG_INFO, "Error Message length successfully read.\n");
 		syslog(LOG_INFO, "Attempting to read Error Message.\n");
+		
+		syslog(LOG_INFO, "Message size is %d\n", msgSize);
 
 		char errMsg[msgSize];
 		memset(errMsg, '0', sizeof(errMsg));
