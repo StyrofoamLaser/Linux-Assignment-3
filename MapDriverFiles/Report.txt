@@ -15,10 +15,12 @@ RUNNING:
 
 CURRENTLY KNOWN BUGS:
 - Error messages occaisonally have 0s in them that were not placed there (Particularly at the end)
+- mapclientg children begin to write message but never finish for some reason.
+  We think it might be due to reentrant stuff.
 
 CONTRIBUTIONS:
 
 Cody: Makefile, Shell Script, and Report, Server
 Vincent: Driver ioctl(), Driver lseek(), modifications to Makefile, Client/Server
 Robert: Driver variables and setup, driver read(), driver write(), modifications to Makefile
-James: Test program, interpreting text files in the test program, ASCII Art Names
+James: Test program, interpreting text files in the test program, ASCII Art Names, Extra makefile   stuff, mapclientg
